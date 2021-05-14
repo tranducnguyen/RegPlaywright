@@ -1,0 +1,30 @@
+﻿<Window x:Class="RegPlaywright.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:RegPlaywright"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="482" Width="900">
+    <Grid Margin="0,0,0,-16">
+        <Button x:Name="btnReg" Content="REG" HorizontalAlignment="Left" Margin="160,14,0,0" VerticalAlignment="Top" Click="btnReg_Click" Width="65" Height="22"/>
+        <TextBox x:Name="txbSoLuong" HorizontalAlignment="Left" Height="25" Margin="80,11,0,0" Text="3" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="txbSoLuong_TextChanged"/>
+        <Label Content="Số luồng" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
+        <ListView x:Name="lsvData" HorizontalAlignment="Left" Height="305" Margin="0,59,0,0" VerticalAlignment="Top" Width="890">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="UID" Width="120" DisplayMemberBinding="{Binding Uid}"/>
+                    <GridViewColumn Header="Pass" Width="50" DisplayMemberBinding="{Binding Pass}"/>
+                    <GridViewColumn Header="Cookie" Width="120" DisplayMemberBinding="{Binding Cookiedatr}"/>
+                    <GridViewColumn Header="Họ" Width="50" DisplayMemberBinding="{Binding Ho}"/>
+                    <GridViewColumn Header="Tên" Width="100" DisplayMemberBinding="{Binding Ten}"/>
+                    <GridViewColumn Header="Sdt" Width="100" DisplayMemberBinding="{Binding Sdt}"/>
+                    <GridViewColumn Header="IP" Width="100" DisplayMemberBinding="{Binding Ip}"/>
+                    <GridViewColumn Header="Status" Width="150" DisplayMemberBinding="{Binding Status}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+        <Label x:Name="labShow" Content="Label" HorizontalAlignment="Left" Height="40" Margin="252,14,0,0" VerticalAlignment="Top" Width="324"/>
+
+    </Grid>
+</Window>
