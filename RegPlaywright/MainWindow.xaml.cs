@@ -158,7 +158,7 @@ namespace RegPlaywright
                 {
                     int vitri = index;
                     int x = 100 + ((vitri % 4) * 250);
-                    int y = (vitri / 4) * 300;
+                    int y = (vitri / 4) * 150;
                     index++;
                     using var cts = new CancellationTokenSource();
                     cts.CancelAfter(TimeSpan.FromSeconds(150));
