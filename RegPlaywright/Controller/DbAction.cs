@@ -141,15 +141,15 @@ namespace RegPlaywright.Controller
             GC.WaitForPendingFinalizers();
             return false;
         }
-        public void CleanId()
-        {
-            using (LiteDatabase db = new LiteDatabase(UserDb))
-            {
-                db.Timeout = TimeSpan.FromSeconds(200);
-                ILiteCollection<Test> List = db.GetCollection<Test>("Test");
+        //public void CleanId()
+        //{
+        //    using (LiteDatabase db = new LiteDatabase(UserDb))
+        //    {
+        //        db.Timeout = TimeSpan.FromSeconds(200);
+        //        ILiteCollection<Test> List = db.GetCollection<Test>("Test");
 
-                List.DeleteAll();
-            }
-        }
+        //        List.DeleteAll();
+        //    }
+        //}
     }
 }
