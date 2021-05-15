@@ -19,6 +19,12 @@ namespace RegPlaywright.Controller
             GC.Collect();
             GC.SuppressFinalize(this);
         }
+        public void DisposeBrowser()
+        {
+            DisposeBrowser(true);
+            GC.Collect();
+            GC.SuppressFinalize(this);
+        }
         private void Dispose(bool disposing)
         {
             if (disposing)
@@ -29,6 +35,16 @@ namespace RegPlaywright.Controller
                 Browser?.CloseAsync();
                 Browser?.DisposeAsync();
                 Playwright?.Dispose();
+            }
+        }
+        private void DisposeBrowser(bool disposing)
+        {
+            if (disposing)
+            {
+                Browser?.CloseAsync();
+                Browser = Playwright?.Chromium.LaunchAsync().Result.NewContextAsync().Result;
+                Browser?.CloseAsync();
+                Browser?.DisposeAsync();
             }
         }
     }
