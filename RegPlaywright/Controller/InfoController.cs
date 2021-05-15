@@ -31,7 +31,7 @@ namespace RegPlaywright.Controller
             string cookieMoidatr = "";
             string cookieMoiFr = "";
             var randomSdt_Vi = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+84(968|965|986|987|966|977|903|368|366|981|983|976|967)[0-9]{6}" });
-            var randomSdt_Us = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+1(541|704)[0-9]{7}" });
+            //var randomSdt_Us = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+1(541|704)[0-9]{7}" });
             //var randomSdt_Us = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+1(209|213|279|310|323|408|415|424|442|510|530|559|562)[0-9]{7}" });
             var randomPass = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"[a-zA-Z0-9]{6}" });
             

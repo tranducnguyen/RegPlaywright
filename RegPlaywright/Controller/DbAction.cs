@@ -151,16 +151,5 @@ namespace RegPlaywright.Controller
                 List.DeleteAll();
             }
         }
-        public class Test
-        {
-            [BsonId]
-            public ObjectId _id { get; set; }
-            public string Id { get; set; }
-            public string Token { get; set; }
-            public string Fid { get; set; }
-            public string machine_id { get; set; }
-            public string user_storage_key { get; set; }
-            public string session_key { get; set; }
-        }
     }
 }

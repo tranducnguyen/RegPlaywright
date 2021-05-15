@@ -22,6 +22,8 @@ namespace RegPlaywright
     /// </summary>
     public partial class MainWindow : Window
     {
+
+        //Ver 1.0
         int numThread;
         int checkChrome;
         int numSuccess;
@@ -65,8 +67,10 @@ namespace RegPlaywright
                         IsBackground = true
                     };
                     t.Start();
+
                     listThread.Add(t);
                 }
+
                 foreach (Thread item in listThread)
                 {
                     item.Join();
@@ -97,7 +101,7 @@ namespace RegPlaywright
                         db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = infoItem.Ip });
                     }
                 }
-                
+
                 updateListView();
                 updateShow("Success: " + this.numSuccess);
                 if (!changeIP())
@@ -110,60 +114,315 @@ namespace RegPlaywright
 
         }
 
-         async Task CreatAcMulti_v2Async()
+        void CreatAcMulti_v2()
         {
-
-            List<Info> listInfo = new List<Info>();
+            _ = CreatAcMulti_v2Async();
+        }
+        async Task CreatAcMulti_v2Async()
+        {
             InfoController InfoController = new InfoController();
-
             numSuccess = 0;
-            //List<Thread> listThread = new List<Thread>();
-            List<Task> listTask = new List<Task>();
+
             Dispatcher.Invoke(new Action(() =>
             {
                 this.btnReg.Content = "Clicked";
             }));
-
+            
+            DbAction db = new DbAction();
             for (int k = 0; k < 5000; k++)
             {
+                updateShow("Bắt đầu Success: " + this.numSuccess);
+                checkChrome = numThread;
+                List<ChroniumReg> listChrome = new List<ChroniumReg>();
+                List<Info> listInfo = new List<Info>();
                 listInfo = InfoController.Create(numThread);
+                using var ctsAll = new CancellationTokenSource();
+                ctsAll.CancelAfter(TimeSpan.FromMinutes(5));
+                foreach(Info item in listInfo)
+                {
+                    ChroniumReg chromeReg = new ChroniumReg
+                    {
+                        Info = item
+                    };
+                    listChrome.Add(chromeReg);
+                }
                 Dispatcher.Invoke(new Action(() =>
                 {
                     lsvData.ItemsSource = listInfo;
                 }));
+                int index = 0;
 
-                checkChrome = numThread;
-                await listTask.ParallelForEachAsync(async item =>
+                await listChrome.ParallelForEachAsync(async (item) =>
                 {
-                    // some pre stuff
-                    var response = await GetData(item);
-                    bag.Add(response);
-                    // some post stuff
-                }, maxDegreeOfParallelism, 10);
-                var count = bag.Count;
-                for (int i = 0; i < numThread; i++)
+                    int vitri = index;
+                    int x = 100 + ((vitri % 4) * 250);
+                    int y = (vitri / 4) * 300;
+                    index++;
+                    using var cts = new CancellationTokenSource();
+                    cts.CancelAfter(TimeSpan.FromSeconds(150));
+                    await Task.Delay(100);
+                    await CreateBrowseAsync(item, cts.Token, x, y, "", vitri).ConfigureAwait(false);
+
+                },
+                maxDegreeOfParallelism: 2,
+                ctsAll.Token);
+
+                Debug.Print("Tổng số " + listChrome.Count.ToString());
+
+                await listChrome.ParallelForEachAsync(async (item) =>
                 {
-                    //int x = 100 + ((i % 4) * 250);
-                    //int y = (i / 4) * 300;
-                    int x = 100;
-                    int y = 0;
-                    int index = i;
-                   
-                        Thread t = new Thread(() =>
+                    await RegBrowseAsync(item).ConfigureAwait(false);
+
+                }, maxDegreeOfParallelism: this.numThread);
+
+                Debug.Print("Nạp file vào db");
+
+                foreach (ChroniumReg item in listChrome)
+                {
+                    if (item.Info.Uid != null)
+                    {
+                        if (item.Info.Uid.Length > 0)
                         {
-                            listTask.Add(createBrowse(listInfo[index], x, y, "", index));
-                        })
-                        {
-                            IsBackground = true
-                        };
-                        t.Start();
-                        //listThread.Add(t);
-                    t.Join();
-                    Thread.Sleep(10000);
+                            File.AppendAllText("ketqua.txt", item.Info.Uid + "|" + item.Info.Pass + "|" + item.Info.Cookie + "\n");
+                        }
+                    }
+
+                    if (item.Info.Status.Contains("Success") && item.Info.Status != null)
+                    {
+                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Success" });
+                        db.AddUA(new UAList { CheckPoint = "0", Success = "1", UA = item.Info.Ua });
+                        db.AddIP(new IPInfo { CheckPoint = "0", Success = "1", IP = item.Info.Ip });
+
+                    }
+                    else
+                    {
+                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint" });
+                        db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua });
+                        db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
+                    }
                 }
-                MessageBox.Show("Xong");
+
+                Debug.Print("Update list");
+                updateListView();
+                updateShow("Success: " + this.numSuccess);
+                Debug.Print("Change IP");
+                if (!changeIP())
+                {
+                    updateShow("Không change đươc IP");
+                    return;
+                }
+                updateShow("Change xong IP");
+                Debug.Print("Change xong IP");
+            }
+        }
+
+        async Task<ChroniumReg> RegBrowseAsync(ChroniumReg chrome)
+        {
+            Debug.Print("Chạy hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
+
+            if (chrome.Browser != null)
+            {
+                await chrome.Browser.ClearCookiesAsync();
+                await chrome.Browser.ClearPermissionsAsync();
+
+                var Page = chrome.Browser.Pages[0];
+                await Page.RouteAsync("**", (router, e) =>
+                {
+                    if (e.ResourceType == ResourceType.Image || e.ResourceType == ResourceType.Images || e.ResourceType == ResourceType.StyleSheet || e.ResourceType == ResourceType.Font || e.ResourceType == ResourceType.Media)
+                        router.AbortAsync();
+                    else
+                        router.ContinueAsync();
+                });
+
+                try
+                {
+                    var cookieadd = new List<SetNetworkCookieParam>
+                                    {
+                                        new SetNetworkCookieParam {Url="https://p.facebook.com/", Name = "datr", Value = chrome.Info.Cookiedatr},
+                                        new SetNetworkCookieParam {Url="https://www.facebook.com/", Name = "datr", Value = chrome.Info.Cookiedatr},
+                                    };
+                    await chrome.Browser.AddCookiesAsync(cookieadd).ConfigureAwait(false);
+                }
+                catch
+                {
+                    chrome.Info.Status = "Error reg";
+                    await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                    await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                    return chrome;
+                }
+
+                int count = 5;
+                bool creation = false;
+                while (count > 0 && !creation)
+                {
+                    try
+                    {
+                        creation = await Page.IsVisibleAsync("#signup-button", 1000).ConfigureAwait(false);
+                    }
+                    catch { }
+                    count--;
+                }
+
+
+                if (count > 0)
+                {
+                    await Task.Delay(2000);
+                    try
+                    {
+                        await Page.ClickAsync("#signup-button").ConfigureAwait(false);
+                    }
+                    catch
+                    {
+                        chrome.Info.Status = "Error net";
+                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        return chrome;
+                    }
+                    try
+                    {
+                        await Task.Delay(1000);
+                        await Page.TypeAsync("//*[@name='lastname']", chrome.Info.Ho, delay: 150).ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(1500, 2000));
+                        await Page.TypeAsync("//*[@name='firstname']", chrome.Info.Ten, delay: 150).ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(3000, 4000));
+                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(1500, 2000));
+                        await Page.SelectOptionAsync("#day", chrome.Info.Birth_day.ToString()).ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(1500, 2000));
+                        await Page.SelectOptionAsync("#month", chrome.Info.Birth_month.ToString()).ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(1500, 2000));
+                        await Page.SelectOptionAsync("#year", chrome.Info.Birth_year.ToString()).ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(3000, 4000));
+                        await Page.ClickAsync("//*/button[@type='submit']");
+                        await Task.Delay(new Random().Next(1500, 2000));
+                        await Page.TypeAsync("//*[@name='reg_email__']", chrome.Info.Sdt, delay: 150).ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(3000, 4000));
+                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(1500, 2000));
+
+                        await Page.CheckAsync("#Nam").ConfigureAwait(false);
+
+                        //await Page.CheckAsync("//input[@id='sex' and @value='"+sex+"']").ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(3000, 4000));
+                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
+                        await Task.Delay(new Random().Next(1500, 2000));
+
+                        await Page.TypeAsync("#password_step_input", chrome.Info.Pass, 150).ConfigureAwait(false);
+
+                        await Task.Delay(7000);
+                        int count_limit = 300;
+                        bool check_v2 = true;
+                        while (checkChrome > 0 && count_limit > 0)
+                        {
+                            try
+                            {
+                                bool signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+
+                                if (signup && check_v2)
+                                {
+                                    check_v2 = false;
+                                    checkChrome--;
+                                }
+                            }
+                            catch { Debug.Print("Out dòng 315"); }
+                            await Task.Delay(100);
+                            count_limit--;
+                            if (count_limit == 0)
+                                checkChrome = 0;
+                        }
+                        await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                    }
+                    catch
+                    {
+                        chrome.Info.Status = "Error input";
+                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        return chrome;
+                    }
+                    count = 30;
+                    bool error = false;
+                    bool checkpoint = false;
+                    bool done = false;
+                    while (count > 0 & !error & !checkpoint & !done)
+                    {
+                        error = Page.Url.Contains("error");
+                        checkpoint = Page.Url.Contains("checkpoint");
+                        done = Page.Url.Contains("save-device");
+                        count--;
+                        await Task.Delay(1000);
+                    }
+
+                    if (count <= 0)
+                    {
+                        chrome.Info.Status = "Out Time";
+                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        return chrome;
+
+                    }
+
+                    if (error)
+                    {
+                        chrome.Info.Status = "Error";
+                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //GC.Collect();
+                        //GC.WaitForPendingFinalizers();
+                        return chrome;
+                    }
+
+                    if (checkpoint)
+                    {
+
+                        chrome.Info.Status = "CheckPoint";
+
+                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //GC.Collect();
+                        //GC.WaitForPendingFinalizers();
+                        return chrome;
+
+                    }
+
+                    if (done)
+                    {
+
+                        chrome.Info.Status = "Success";
+                        var ak = (await chrome.Browser.GetCookiesAsync("https://facebook.com/").ConfigureAwait(false)).ToList();
+                        List<string> values = new List<string>();
+                        ak.ForEach(item =>
+                        {
+                            if (item.Name.Contains("datr") || item.Name.Contains("sb") || item.Name.Contains("c_user") || item.Name.Contains("xs"))
+                                values.Add($"{item.Name}={item.Value}");
+                        });
+                        string result = string.Join(";", values);
+                        string pattern = @"c_user=(\d+)";
+                        string id = Regex.Match(result, pattern).Groups[1].Value.ToString();
+                        chrome.Info.Uid = id;
+                        chrome.Info.Cookie = result;
+                        chrome.Info.Datecreate = DateTime.UtcNow;
+
+                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        numSuccess++;
+                        return chrome;
+                        //return infoItem;
+                    }
+                }
+                chrome.Info.Status = "Error reg";
+                await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                return chrome;
+            }
+            else
+            {
+                Debug.Print("Broser bị null trong hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
             }
 
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+            Debug.Print("Thoát hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
+            return chrome;
         }
         bool changeIP()
         {
@@ -197,13 +456,11 @@ namespace RegPlaywright
             NguyenHelper.clickElementXpath(deviceChose, "//node[@resource-id='com.device.emulator.pro:id/action_randomall']");
 
         }
-        async Task<ChroniumReg> createBrowse(Info infoItem, int x = 0, int y = 0, string proxy = null, int indexvalue = 0)
-        {
-            ChroniumReg chrome = new ChroniumReg();
-            chrome.Info = infoItem;
-            Random rand = new Random();
-            int sex = rand.Next(1, 2);
 
+        async Task<ChroniumReg> CreateBrowseAsync(ChroniumReg chromeItem, CancellationToken token, int x = 0, int y = 0, string v = null, int indexvalue = 0)
+        {
+            
+            Debug.Print(indexvalue + " - vi tri " + x);
             LaunchPersistentOptions options = new LaunchPersistentOptions
             {
                 Headless = false,
@@ -221,37 +478,30 @@ namespace RegPlaywright
                     "--enable-automation",
                     "--disable-infobars",
                 },
-                UserAgent = infoItem.Ua,
+                UserAgent = chromeItem.Info.Ua,
                 IgnoreAllDefaultArgs = false
             };
+            chromeItem.Browser = null;
+            chromeItem.Playwright = await Playwright.CreateAsync();
 
-            chrome.Playwright = (IPlaywright)Playwright.CreateAsync().Result;
-            chrome.Browser = null;
-
+            int count = 5;
             do
             {
                 try
                 {
-                    chrome.Browser = (IChromiumBrowser)await chrome.Playwright.Chromium.LaunchPersistentContextAsync("", options);
+                    chromeItem.Browser = await chromeItem.Playwright.Chromium.LaunchPersistentContextAsync("", options);
                 }
                 catch
                 {
-                    if (chrome.Browser != null)
-                    {
-                        await chrome.Browser.CloseAsync();
-                        await chrome.Browser.DisposeAsync();
-                    }
-
-                    chrome.Browser = null;
+                    await chromeItem.Browser.CloseAsync().ConfigureAwait(false);
+                    await chromeItem.Browser.DisposeAsync().ConfigureAwait(false);
+                    chromeItem.Browser = null;
                 }
-                await Task.Delay(500);
-            } while (chrome.Browser == null);
-
-            return chrome;
+                await Task.Delay(100);
+                count--;
+            } while (chromeItem.Browser == null && count > 0);
+            return chromeItem;
         }
-
-
-
         async Task<Info> RegByChrome(Info infoItem, int x = 0, int y = 0, string proxy = null, int indexvalue = 0)
         {
             Random rand = new Random();
@@ -295,17 +545,19 @@ namespace RegPlaywright
                     }
                     await Task.Delay(500);
                 } while (browser == null);
+
                 await browser.ClearCookiesAsync();
                 await browser.ClearPermissionsAsync();
 
                 var Page = browser.Pages[0];
-                await Page.RouteAsync("**/*", (router, e) =>
+                await Page.RouteAsync("**", (router, e) =>
                 {
-                    if (e.ResourceType == ResourceType.Image || e.ResourceType == ResourceType.Images /*|| e.ResourceType == ResourceType.StyleSheet */|| e.ResourceType == ResourceType.Font || e.ResourceType == ResourceType.Media)
+                    if (e.ResourceType == ResourceType.Image || e.ResourceType == ResourceType.Images || e.ResourceType == ResourceType.StyleSheet || e.ResourceType == ResourceType.Font || e.ResourceType == ResourceType.Media)
                         router.AbortAsync();
                     else
                         router.ContinueAsync();
                 });
+
                 try
                 {
                     var cookieadd = new List<SetNetworkCookieParam>
@@ -324,6 +576,7 @@ namespace RegPlaywright
                     //GC.WaitForPendingFinalizers();
                     return infoItem;
                 }
+
                 int count = 5;
                 bool creation = false;
                 while (count > 0 && !creation)
@@ -979,7 +1232,7 @@ namespace RegPlaywright
         private void btnReg_Click(object sender, RoutedEventArgs e)
         {
 
-            Thread ts = new Thread(CreatAcMulti_v2Async)
+            Thread ts = new Thread(CreatAcMulti_v2)
             {
                 IsBackground = true
             };
