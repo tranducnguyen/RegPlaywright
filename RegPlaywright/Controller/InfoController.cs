@@ -30,7 +30,8 @@ namespace RegPlaywright.Controller
             Dictionary<String, String> dicCookie = new Dictionary<string, string>();
             string cookieMoidatr = "";
             string cookieMoiFr = "";
-            var randomSdt_Vi = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+84(968|965|986|987|966|977|903|368|366|981|983|976|967)[0-9]{6}" });
+            var randomSdt_Vi = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+84(098|096|097|032|035|036|037|038|039|090|093|070|079|077|076|091|094|083|084|085|081|092|056|058|099|059)[0-9]{7}" });
+            //var randomSdt_Vi = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+84(968|965|986|987|966|977|903|368|366|981|983|976|967)[0-9]{6}" });
             //var randomSdt_Us = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+1(541|704)[0-9]{7}" });
             //var randomSdt_Us = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+1(209|213|279|310|323|408|415|424|442|510|530|559|562)[0-9]{7}" });
             var randomPass = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"[a-zA-Z0-9]{6}" });
