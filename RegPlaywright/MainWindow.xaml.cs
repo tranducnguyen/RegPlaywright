@@ -26,6 +26,8 @@ namespace RegPlaywright
         //Ver 1.0
         int numThread;
         int checkChrome;
+        int numTabSameTime;
+        string deviceChose;
         int numSuccess;
         string pathBrowser = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
         // @"C:\Program Files\Google\Chrome\Application\chrome.exe"
@@ -166,7 +168,7 @@ namespace RegPlaywright
                     await CreateBrowseAsync(item, cts.Token, x, y, "", vitri).ConfigureAwait(false);
 
                 },
-                maxDegreeOfParallelism: 4,
+                maxDegreeOfParallelism: this.numTabSameTime,
                 ctsAll.Token);
 
                 Debug.Print("Tổng số " + listChrome.Count.ToString());
@@ -439,7 +441,15 @@ namespace RegPlaywright
                 deviceList = NguyenHelper.GetDevices();
                 if (deviceList.Count > 0)
                 {
-                    airPlanMod(deviceList[0]);
+                    if (string.IsNullOrEmpty(this.deviceChose))
+                    {
+                        airPlanMod(deviceList[0]);
+                    }
+                    else
+                    {
+                        airPlanMod(this.deviceChose);
+                    }
+                    
                     //changeEmulator(deviceList[0]);
                     return true;
                 }
@@ -1248,6 +1258,24 @@ namespace RegPlaywright
                 IsBackground = true
             };
             ts.Start();
+        }
+
+        private void txbSoLuong_Copy_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            try
+            {
+                this.numTabSameTime = int.Parse(txbSoLuong_Copy.Text);
+            }
+            catch { this.numTabSameTime = 4; }
+        }
+
+        private void txbSoLuong_Copy1_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+            try
+            {
+                this.deviceChose =txbSoLuong_Copy1.Text;
+            }
+            catch {}
         }
     }
 }
