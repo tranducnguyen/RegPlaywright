@@ -13,15 +13,23 @@ namespace RegPlaywright.Controller
         public IPage Page { get; set; }
         public Info Info { get; set; }
         public int Index { get; set; }
-        public async void Dispose()
+        public void Dispose()
         {
-            await Browser.CloseAsync();
-            await Browser.DisposeAsync();
+            Dispose(true);
+            GC.Collect();
+            GC.SuppressFinalize(this);
         }
-
-        public static implicit operator Task<object>(ChroniumReg v)
+        private void Dispose(bool disposing)
         {
-            throw new NotImplementedException();
+            if (disposing)
+            {
+                Page?.CloseAsync();
+                Browser?.CloseAsync();
+                Browser = Playwright?.Chromium.LaunchAsync().Result.NewContextAsync().Result;
+                Browser?.CloseAsync();
+                Browser?.DisposeAsync();
+                Playwright?.Dispose();
+            }
         }
     }
 }
