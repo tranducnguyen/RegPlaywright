@@ -127,7 +127,9 @@ namespace RegPlaywright
             {
                 this.btnReg.Content = "Clicked";
             }));
-            
+            DateTime dateNow = DateTime.Now;
+            DateTime dateCheck = new DateTime(2021, 5, 11);
+            int dateCount = dateNow.Subtract(dateCheck).Days;
             DbAction db = new DbAction();
             for (int k = 0; k < 5000; k++)
             {
@@ -189,14 +191,14 @@ namespace RegPlaywright
 
                     if (item.Info.Status.Contains("Success") && item.Info.Status != null)
                     {
-                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Success" });
+                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Success" ,DateCount = dateCount.ToString()});
                         db.AddUA(new UAList { CheckPoint = "0", Success = "1", UA = item.Info.Ua });
                         db.AddIP(new IPInfo { CheckPoint = "0", Success = "1", IP = item.Info.Ip });
 
                     }
                     else
                     {
-                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint" });
+                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint", DateCount = dateCount.ToString()});
                         db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua });
                         db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
                     }
