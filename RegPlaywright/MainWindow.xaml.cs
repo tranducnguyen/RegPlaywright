@@ -219,11 +219,31 @@ namespace RegPlaywright
         async Task<ChroniumReg> RegBrowseAsync(ChroniumReg chrome)
         {
             Debug.Print("Chạy hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
-
+            int count = 5;
+            IBrowserContext brower = null;
             if (chrome.Browser != null)
             {
                 await chrome.Browser.ClearCookiesAsync();
                 await chrome.Browser.ClearPermissionsAsync();
+                
+                do
+                {
+                    
+                    try
+                    {
+                        brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                    }
+                    catch
+                    {
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
+                        brower = null;
+                    }
+                    await Task.Delay(100);
+                    count--;
+                } while (brower == null && count > 0);
+                await brower.CloseAsync().ConfigureAwait(false);
+                await brower.DisposeAsync().ConfigureAwait(false);
 
                 var Page = chrome.Browser.Pages[0];
                 await Page.RouteAsync("**", (router, e) =>
@@ -248,10 +268,28 @@ namespace RegPlaywright
                     chrome.Info.Status = "Error reg";
                     await chrome.Browser.CloseAsync().ConfigureAwait(false);
                     await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                    do
+                    {
+
+                        try
+                        {
+                            brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                        }
+                        catch
+                        {
+                            await brower.CloseAsync().ConfigureAwait(false);
+                            await brower.DisposeAsync().ConfigureAwait(false);
+                            brower = null;
+                        }
+                        await Task.Delay(100);
+                        count--;
+                    } while (brower == null && count > 0);
+                    await brower.CloseAsync().ConfigureAwait(false);
+                    await brower.DisposeAsync().ConfigureAwait(false);
                     return chrome;
                 }
 
-                int count = 5;
+                count = 5;
                 bool creation = false;
                 while (count > 0 && !creation)
                 {
@@ -276,6 +314,25 @@ namespace RegPlaywright
                         chrome.Info.Status = "Error net";
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                       
+                        do
+                        {
+
+                            try
+                            {
+                                brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                            }
+                            catch
+                            {
+                                await brower.CloseAsync().ConfigureAwait(false);
+                                await brower.DisposeAsync().ConfigureAwait(false);
+                                brower = null;
+                            }
+                            await Task.Delay(100);
+                            count--;
+                        } while (brower == null && count > 0);
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
                         return chrome;
                     }
                     try
@@ -337,6 +394,24 @@ namespace RegPlaywright
                         chrome.Info.Status = "Error input";
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        do
+                        {
+
+                            try
+                            {
+                                brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                            }
+                            catch
+                            {
+                                await brower.CloseAsync().ConfigureAwait(false);
+                                await brower.DisposeAsync().ConfigureAwait(false);
+                                brower = null;
+                            }
+                            await Task.Delay(100);
+                            count--;
+                        } while (brower == null && count > 0);
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
                         return chrome;
                     }
                     count = 30;
@@ -357,6 +432,24 @@ namespace RegPlaywright
                         chrome.Info.Status = "Out Time";
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        do
+                        {
+
+                            try
+                            {
+                                brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                            }
+                            catch
+                            {
+                                await brower.CloseAsync().ConfigureAwait(false);
+                                await brower.DisposeAsync().ConfigureAwait(false);
+                                brower = null;
+                            }
+                            await Task.Delay(100);
+                            count--;
+                        } while (brower == null && count > 0);
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
                         return chrome;
 
                     }
@@ -366,6 +459,24 @@ namespace RegPlaywright
                         chrome.Info.Status = "Error";
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        do
+                        {
+
+                            try
+                            {
+                                brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                            }
+                            catch
+                            {
+                                await brower.CloseAsync().ConfigureAwait(false);
+                                await brower.DisposeAsync().ConfigureAwait(false);
+                                brower = null;
+                            }
+                            await Task.Delay(100);
+                            count--;
+                        } while (brower == null && count > 0);
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
                         //GC.Collect();
                         //GC.WaitForPendingFinalizers();
                         return chrome;
@@ -378,6 +489,24 @@ namespace RegPlaywright
 
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        do
+                        {
+
+                            try
+                            {
+                                brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                            }
+                            catch
+                            {
+                                await brower.CloseAsync().ConfigureAwait(false);
+                                await brower.DisposeAsync().ConfigureAwait(false);
+                                brower = null;
+                            }
+                            await Task.Delay(100);
+                            count--;
+                        } while (brower == null && count > 0);
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
                         //GC.Collect();
                         //GC.WaitForPendingFinalizers();
                         return chrome;
@@ -404,20 +533,76 @@ namespace RegPlaywright
 
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        do
+                        {
+
+                            try
+                            {
+                                brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                            }
+                            catch
+                            {
+                                await brower.CloseAsync().ConfigureAwait(false);
+                                await brower.DisposeAsync().ConfigureAwait(false);
+                                brower = null;
+                            }
+                            await Task.Delay(100);
+                            count--;
+                        } while (brower == null && count > 0);
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
                         numSuccess++;
                         return chrome;
                         //return infoItem;
                     }
                 }
                 chrome.Info.Status = "Error reg";
+
                 await chrome.Browser.CloseAsync().ConfigureAwait(false);
                 await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                do
+                {
+
+                    try
+                    {
+                        brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                    }
+                    catch
+                    {
+                        await brower.CloseAsync().ConfigureAwait(false);
+                        await brower.DisposeAsync().ConfigureAwait(false);
+                        brower = null;
+                    }
+                    await Task.Delay(100);
+                    count--;
+                } while (brower == null && count > 0);
+                await brower.CloseAsync().ConfigureAwait(false);
+                await brower.DisposeAsync().ConfigureAwait(false);
                 return chrome;
             }
             else
             {
                 Debug.Print("Broser bị null trong hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
             }
+
+            do
+            {
+
+                try
+                {
+                    brower = await chrome.Playwright.Chromium.LaunchPersistentContextAsync("");
+                }
+                catch
+                {
+                    await brower.CloseAsync().ConfigureAwait(false);
+                    await brower.DisposeAsync().ConfigureAwait(false);
+                    brower = null;
+                }
+                await Task.Delay(100);
+                count--;
+            } while (brower == null && count > 0);
+            await brower.CloseAsync().ConfigureAwait(false);
+            await brower.DisposeAsync().ConfigureAwait(false);
 
             GC.Collect();
             GC.WaitForPendingFinalizers();
@@ -495,6 +680,8 @@ namespace RegPlaywright
                 {
                     await chromeItem.Browser.CloseAsync().ConfigureAwait(false);
                     await chromeItem.Browser.DisposeAsync().ConfigureAwait(false);
+                   
+
                     chromeItem.Browser = null;
                 }
                 await Task.Delay(100);
