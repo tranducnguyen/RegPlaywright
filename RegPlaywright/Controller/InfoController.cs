@@ -12,7 +12,7 @@ namespace RegPlaywright.Controller
     {
         private const string pathTen = "ten.txt";
         private const string pathHo = "ho.txt";
-        private const string pathCookie = "cookie.txt"; // File Cookie
+        private const string pathCookie = "cc_die.txt"; // File Cookie
         private const string pathUAMobile = "user-agents_chrome_iphone_10000.txt"; //File user agent
 
 
