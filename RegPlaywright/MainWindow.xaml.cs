@@ -164,7 +164,7 @@ namespace RegPlaywright
                     await CreateBrowseAsync(item, cts.Token, x, y, "", vitri).ConfigureAwait(false);
 
                 },
-                maxDegreeOfParallelism: 2,
+                maxDegreeOfParallelism: 4,
                 ctsAll.Token);
 
                 Debug.Print("Tổng số " + listChrome.Count.ToString());
