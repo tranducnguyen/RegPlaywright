@@ -500,10 +500,12 @@ namespace RegPlaywright
                 }
                 catch
                 {
-                    await chromeItem.Browser.CloseAsync().ConfigureAwait(false);
-                    await chromeItem.Browser.DisposeAsync().ConfigureAwait(false);
-                   
-
+                    if(chromeItem.Browser != null)
+                    {
+                        await chromeItem.Browser.CloseAsync().ConfigureAwait(false);
+                        await chromeItem.Browser.DisposeAsync().ConfigureAwait(false);
+                        chromeItem.DisposeBrowser();
+                    }
                     chromeItem.Browser = null;
                 }
                 await Task.Delay(100);
