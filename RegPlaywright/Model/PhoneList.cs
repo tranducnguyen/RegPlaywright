@@ -8,5 +8,6 @@ namespace RegPlaywright.Model
         public ObjectId _id { get; set; }
         public string Phone { get; set; }
         public string Active { get; set; }
+        public string DateCount { get; set; }
     }
 }
