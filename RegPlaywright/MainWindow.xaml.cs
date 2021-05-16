@@ -506,7 +506,7 @@ namespace RegPlaywright
                 },
                 UserAgent = chromeItem.Info.Ua,
                 IgnoreAllDefaultArgs = false,
-                Timeout = 120000
+                Timeout = 180000
             };
 
             chromeItem.Browser = null;
