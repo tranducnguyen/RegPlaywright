@@ -140,8 +140,6 @@ namespace RegPlaywright
                 List<ChroniumReg> listChrome = new List<ChroniumReg>();
                 List<Info> listInfo = new List<Info>();
                 listInfo = InfoController.Create(numThread);
-                using var ctsAll = new CancellationTokenSource();
-                ctsAll.CancelAfter(TimeSpan.FromMinutes(5));
                 foreach (Info item in listInfo)
                 {
                     ChroniumReg chromeReg = new ChroniumReg
@@ -156,6 +154,8 @@ namespace RegPlaywright
                 }));
                 int index = 0;
 
+                using var ctsAll = new CancellationTokenSource();
+                ctsAll.CancelAfter(TimeSpan.FromMinutes(5));
                 await listChrome.ParallelForEachAsync(async (item) =>
                 {
                     int vitri = index;
@@ -165,13 +165,11 @@ namespace RegPlaywright
                     using var cts = new CancellationTokenSource();
                     cts.CancelAfter(TimeSpan.FromSeconds(150));
                     await Task.Delay(100);
-                    await CreateBrowseAsync(item, cts.Token, x, y, "", vitri).ConfigureAwait(false);
+                    await CreateBrowseAsync(item, cts, x, y, "", vitri).ConfigureAwait(false);
 
                 },
                 maxDegreeOfParallelism: this.numTabSameTime,
                 ctsAll.Token);
-
-                Debug.Print("Tổng số " + listChrome.Count.ToString());
 
                 await listChrome.ParallelForEachAsync(async (item) =>
                 {
@@ -329,7 +327,7 @@ namespace RegPlaywright
                                     checkChrome--;
                                 }
                             }
-                            catch { Debug.Print("Out dòng 315"); }
+                            catch {}
                             await Task.Delay(100);
                             count_limit--;
                             if (count_limit == 0)
@@ -487,10 +485,8 @@ namespace RegPlaywright
 
         }
 
-        async Task<ChroniumReg> CreateBrowseAsync(ChroniumReg chromeItem, CancellationToken token, int x = 0, int y = 0, string v = null, int indexvalue = 0)
+        async Task<ChroniumReg> CreateBrowseAsync(ChroniumReg chromeItem, CancellationTokenSource token, int x = 0, int y = 0, string v = null, int indexvalue = 0)
         {
-
-            Debug.Print(indexvalue + " - vi tri " + x);
             LaunchPersistentOptions options = new LaunchPersistentOptions
             {
                 Headless = false,
@@ -509,8 +505,10 @@ namespace RegPlaywright
                     "--disable-infobars",
                 },
                 UserAgent = chromeItem.Info.Ua,
-                IgnoreAllDefaultArgs = false
+                IgnoreAllDefaultArgs = false,
+                Timeout = 120000
             };
+
             chromeItem.Browser = null;
             chromeItem.Playwright = await Playwright.CreateAsync();
 
