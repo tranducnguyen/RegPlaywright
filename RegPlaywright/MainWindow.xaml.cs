@@ -348,12 +348,20 @@ namespace RegPlaywright
                     bool error = false;
                     bool checkpoint = false;
                     bool done = false;
+                    bool signup = false;
                     while (count > 0 & !error & !checkpoint & !done)
                     {
-                        bool signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-                        if (signup)
+                        if (!signup)
                         {
-                            await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                            try
+                            {
+                                signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                                if (signup)
+                                {
+                                    await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                                }
+                            }
+                            catch { }
                         }
                         error = Page.Url.Contains("error");
                         checkpoint = Page.Url.Contains("checkpoint");
