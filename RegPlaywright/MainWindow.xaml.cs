@@ -361,7 +361,7 @@ namespace RegPlaywright
                     bool checkpoint = false;
                     bool done = false;
 
-                    while (count > 0 & !error & !checkpoint & !done & !error1)
+                    while (count > 0 & !error & !checkpoint & !done)
                     {
                         error = Page.Url.Contains("error");
                         checkpoint = Page.Url.Contains("checkpoint");
