@@ -335,7 +335,7 @@ namespace RegPlaywright
                             if (count_limit == 0)
                                 checkChrome = 0;
                         }
-                        await Page.DblClickAsync("//*/button[@value='Đăng ký']");
+                        await Page.ClickAsync("//*/button[@value='Đăng ký']");
                     }
                     catch
                     {
@@ -367,7 +367,7 @@ namespace RegPlaywright
                         checkpoint = Page.Url.Contains("checkpoint");
                         done = Page.Url.Contains("save-device");
                         count--;
-                        await Task.Delay(100);
+                        await Task.Delay(1000);
                     }
 
                     if (count <= 0)
