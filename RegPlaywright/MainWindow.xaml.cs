@@ -142,7 +142,7 @@ namespace RegPlaywright
                 listInfo = InfoController.Create(numThread);
                 using var ctsAll = new CancellationTokenSource();
                 ctsAll.CancelAfter(TimeSpan.FromMinutes(5));
-                foreach(Info item in listInfo)
+                foreach (Info item in listInfo)
                 {
                     ChroniumReg chromeReg = new ChroniumReg
                     {
@@ -193,14 +193,14 @@ namespace RegPlaywright
 
                     if (item.Info.Status.Contains("Success") && item.Info.Status != null)
                     {
-                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Success" ,DateCount = dateCount.ToString()});
+                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Success", DateCount = dateCount.ToString() });
                         db.AddUA(new UAList { CheckPoint = "0", Success = "1", UA = item.Info.Ua });
                         db.AddIP(new IPInfo { CheckPoint = "0", Success = "1", IP = item.Info.Ip });
 
                     }
                     else
                     {
-                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint", DateCount = dateCount.ToString()});
+                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint", DateCount = dateCount.ToString() });
                         db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua });
                         db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
                     }
@@ -345,32 +345,32 @@ namespace RegPlaywright
                         chrome.Dispose();
                         return chrome;
                     }
+                    bool signup2 = false;
+                    try
+                    {
+                        signup2 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                        if (signup2)
+                        {
+                            await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                        }
+                    }
+                    catch { }
+
                     count = 30;
                     bool error = false;
                     bool checkpoint = false;
                     bool done = false;
-                    bool signup2 = false;
+
                     while (count > 0 & !error & !checkpoint & !done)
                     {
-                        if (!signup2)
-                        {
-                            try
-                            {
-                                signup2 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-                                if (signup2)
-                                {
-                                    await Page.ClickAsync("//*/button[@value='Đăng ký']");
-                                }
-                            }
-                            catch { }
-                        }
+
                         error = Page.Url.Contains("error");
                         checkpoint = Page.Url.Contains("checkpoint");
                         done = Page.Url.Contains("save-device");
                         count--;
                         await Task.Delay(100);
                     }
-                    
+
                     if (count <= 0)
                     {
                         chrome.Info.Status = "Out Time";
@@ -463,7 +463,7 @@ namespace RegPlaywright
                     {
                         airPlanMod(this.deviceChose);
                     }
-                    
+
                     //changeEmulator(deviceList[0]);
                     return true;
                 }
@@ -490,7 +490,7 @@ namespace RegPlaywright
 
         async Task<ChroniumReg> CreateBrowseAsync(ChroniumReg chromeItem, CancellationToken token, int x = 0, int y = 0, string v = null, int indexvalue = 0)
         {
-            
+
             Debug.Print(indexvalue + " - vi tri " + x);
             LaunchPersistentOptions options = new LaunchPersistentOptions
             {
@@ -524,7 +524,7 @@ namespace RegPlaywright
                 }
                 catch
                 {
-                    if(chromeItem.Browser != null)
+                    if (chromeItem.Browser != null)
                     {
                         await chromeItem.Browser.CloseAsync().ConfigureAwait(false);
                         await chromeItem.Browser.DisposeAsync().ConfigureAwait(false);
@@ -1287,9 +1287,9 @@ namespace RegPlaywright
         {
             try
             {
-                this.deviceChose =txbSoLuong_Copy1.Text;
+                this.deviceChose = txbSoLuong_Copy1.Text;
             }
-            catch {}
+            catch { }
         }
     }
 }
