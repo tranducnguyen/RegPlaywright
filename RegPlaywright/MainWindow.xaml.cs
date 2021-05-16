@@ -316,13 +316,14 @@ namespace RegPlaywright
                         await Task.Delay(7000);
                         int count_limit = 300;
                         bool check_v2 = true;
+                        bool signup1 = false;
                         while (checkChrome > 0 && count_limit > 0)
                         {
                             try
                             {
-                                bool signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                                signup1 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
 
-                                if (signup && check_v2)
+                                if (signup1 && check_v2)
                                 {
                                     check_v2 = false;
                                     checkChrome--;
@@ -348,15 +349,15 @@ namespace RegPlaywright
                     bool error = false;
                     bool checkpoint = false;
                     bool done = false;
-                    bool signup = false;
+                    bool signup2 = false;
                     while (count > 0 & !error & !checkpoint & !done)
                     {
-                        if (!signup)
+                        if (!signup2)
                         {
                             try
                             {
-                                signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-                                if (signup)
+                                signup2 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                                if (signup2)
                                 {
                                     await Page.ClickAsync("//*/button[@value='Đăng ký']");
                                 }
