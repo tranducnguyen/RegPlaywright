@@ -7,10 +7,10 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="482" Width="900">
     <Grid Margin="0,0,0,-16">
-        <Button x:Name="btnReg" Content="REG" HorizontalAlignment="Left" Margin="160,14,0,0" VerticalAlignment="Top" Click="btnReg_Click" Width="65" Height="22"/>
-        <TextBox x:Name="txbSoLuong" HorizontalAlignment="Left" Height="25" Margin="80,11,0,0" Text="3" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="txbSoLuong_TextChanged"/>
+        <Button x:Name="btnReg" Content="REG" HorizontalAlignment="Left" Margin="246,14,0,0" VerticalAlignment="Top" Click="btnReg_Click" Width="65" Height="22"/>
+        <TextBox x:Name="txbSoLuong" HorizontalAlignment="Left" Height="26" Margin="132,12,0,0" Text="3" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="txbSoLuong_TextChanged"/>
         <Label Content="Số luồng" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <ListView x:Name="lsvData" HorizontalAlignment="Left" Height="305" Margin="0,59,0,0" VerticalAlignment="Top" Width="890">
+        <ListView x:Name="lsvData" HorizontalAlignment="Left" Height="305" Margin="0,110,0,0" VerticalAlignment="Top" Width="890">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="UID" Width="120" DisplayMemberBinding="{Binding Uid}"/>
@@ -24,7 +24,11 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label x:Name="labShow" Content="Label" HorizontalAlignment="Left" Height="40" Margin="252,14,0,0" VerticalAlignment="Top" Width="324"/>
+        <Label x:Name="labShow" Content="Label" HorizontalAlignment="Left" Height="40" Margin="338,14,0,0" VerticalAlignment="Top" Width="324"/>
+        <TextBox x:Name="txbSoLuong_Copy" HorizontalAlignment="Left" Height="25" Margin="132,42,0,0" Text="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="txbSoLuong_Copy_TextChanged"/>
+        <Label Content="Số tab same time" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="txbSoLuong_Copy1" HorizontalAlignment="Left" Height="25" Margin="132,80,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="113" TextChanged="txbSoLuong_Copy1_TextChanged"/>
+        <Label Content="Tên device" HorizontalAlignment="Left" Margin="10,79,0,0" VerticalAlignment="Top" Width="100"/>
 
     </Grid>
 </Window>
