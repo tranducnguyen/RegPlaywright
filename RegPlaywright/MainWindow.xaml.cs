@@ -335,7 +335,7 @@ namespace RegPlaywright
                             if (count_limit == 0)
                                 checkChrome = 0;
                         }
-                        await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                        await Page.DblClickAsync("//*/button[@value='Đăng ký']");
                     }
                     catch
                     {
@@ -345,16 +345,16 @@ namespace RegPlaywright
                         chrome.Dispose();
                         return chrome;
                     }
-                    bool signup2 = false;
-                    try
-                    {
-                        signup2 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-                        if (signup2)
-                        {
-                            await Page.ClickAsync("//*/button[@value='Đăng ký']");
-                        }
-                    }
-                    catch { }
+                    //bool signup2 = false;
+                    //try
+                    //{
+                    //    signup2 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                    //    if (signup2)
+                    //    {
+                    //        await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                    //    }
+                    //}
+                    //catch { }
 
                     count = 30;
                     bool error = false;
