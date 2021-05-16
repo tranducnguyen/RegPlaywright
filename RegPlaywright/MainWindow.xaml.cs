@@ -350,13 +350,18 @@ namespace RegPlaywright
                     bool done = false;
                     while (count > 0 & !error & !checkpoint & !done)
                     {
+                        bool signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                        if (signup)
+                        {
+                            await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                        }
                         error = Page.Url.Contains("error");
                         checkpoint = Page.Url.Contains("checkpoint");
                         done = Page.Url.Contains("save-device");
                         count--;
-                        await Task.Delay(1000);
+                        await Task.Delay(100);
                     }
-
+                    
                     if (count <= 0)
                     {
                         chrome.Info.Status = "Out Time";
