@@ -358,13 +358,15 @@ namespace RegPlaywright
 
                     count = 30;
                     bool error = false;
+                    bool error1 = false;
                     bool checkpoint = false;
                     bool done = false;
 
-                    while (count > 0 & !error & !checkpoint & !done)
+                    while (count > 0 & !error & !checkpoint & !done & !error1)
                     {
 
                         error = Page.Url.Contains("error");
+                        error1 = Page.GetTitleAsync().ToString().Contains("Lỗi");
                         checkpoint = Page.Url.Contains("checkpoint");
                         done = Page.Url.Contains("save-device");
                         count--;
