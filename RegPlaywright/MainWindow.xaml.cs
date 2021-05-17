@@ -24,98 +24,21 @@ namespace RegPlaywright
     {
 
         //Ver 1.0
+        const string version = "1.0.0";
         int numThread;
         int checkChrome;
         int numTabSameTime;
         string deviceChose;
         int numSuccess;
+        bool isCCmoiD = true;
         string pathBrowser = @"C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe";
-        // @"C:\Program Files\Google\Chrome\Application\chrome.exe"
+
         public MainWindow()
         {
+           
             InitializeComponent();
+            this.Title = "Registration Facebook by Kyo ver " + version;
         }
-        void CreatAcMulti()
-        {
-
-            List<Info> listInfo = new List<Info>();
-            InfoController InfoController = new InfoController();
-
-            numSuccess = 0;
-            List<Thread> listThread = new List<Thread>();
-            for (int k = 0; k < 5000; k++)
-            {
-                listInfo = InfoController.Create(numThread);
-                Dispatcher.Invoke(new Action(() =>
-                {
-                    lsvData.ItemsSource = listInfo;
-                    this.btnReg.Content = "Clicked";
-                }));
-                checkChrome = numThread;
-                for (int i = 0; i < numThread; i++)
-                {
-                    //int x = 100 + ((i % 4) * 250);
-                    //int y = (i / 4) * 300;
-                    int x = 100;
-                    int y = 0;
-                    int index = i;
-
-                    Thread t = new Thread(() =>
-                    {
-                        CreateAccAsync(listInfo[index], x, y, "", index);
-
-                    })
-                    {
-                        IsBackground = true
-                    };
-                    t.Start();
-
-                    listThread.Add(t);
-                }
-
-                foreach (Thread item in listThread)
-                {
-                    item.Join();
-                }
-
-                DbAction db = new DbAction();
-                foreach (Info infoItem in listInfo)
-                {
-                    if (infoItem.Uid != null)
-                    {
-                        if (infoItem.Uid.Length > 0)
-                        {
-                            File.AppendAllText("ketqua.txt", infoItem.Uid + "|" + infoItem.Pass + "|" + infoItem.Cookie + "\n");
-                        }
-                    }
-
-                    if (infoItem.Status.Contains("Success") && infoItem.Status != null)
-                    {
-                        db.AddPhone(new PhoneList { Phone = infoItem.Sdt, Active = "Success" });
-                        db.AddUA(new UAList { CheckPoint = "0", Success = "1", UA = infoItem.Ua });
-                        db.AddIP(new IPInfo { CheckPoint = "0", Success = "1", IP = infoItem.Ip });
-
-                    }
-                    else
-                    {
-                        db.AddPhone(new PhoneList { Phone = infoItem.Sdt, Active = "checkpoint" });
-                        db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = infoItem.Ua });
-                        db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = infoItem.Ip });
-                    }
-                }
-
-                updateListView();
-                updateShow("Success: " + this.numSuccess);
-                if (!changeIP())
-                {
-                    updateShow("Không change đươc IP");
-                    return;
-                }
-                updateShow("Change xong IP");
-            }
-
-        }
-
         void CreatAcMulti_v2()
         {
             _ = CreatAcMulti_v2Async();
@@ -135,7 +58,7 @@ namespace RegPlaywright
             DbAction db = new DbAction();
             for (int k = 0; k < 5000; k++)
             {
-                updateShow("Bắt đầu Success: " + this.numSuccess);
+                UpdateShow("Bắt đầu Success: " + this.numSuccess);
                 checkChrome = numThread;
                 List<ChroniumReg> listChrome = new List<ChroniumReg>();
                 List<Info> listInfo = new List<Info>();
@@ -173,7 +96,7 @@ namespace RegPlaywright
                 {
                     await RegBrowseAsync(item).ConfigureAwait(false);
 
-                }, maxDegreeOfParallelism: this.numThread);
+                }, maxDegreeOfParallelism: this.numThread, ctsAll.Token);
 
                 Debug.Print("Nạp file vào db");
 
@@ -196,30 +119,37 @@ namespace RegPlaywright
                     }
                     else
                     {
-                        db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint", DateCount = dateCount.ToString() });
-                        db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua, Notice = item.IsNote.ToString() });
-                        db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
+                        if (item.Info.Status != null)
+                        {
+                            db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = item.Info.Status, DateCount = dateCount.ToString() });
+                            db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua, Notice = item.IsNote.ToString() });
+                            db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
+                        }
+                        else
+                        {
+                            db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Không xác định", DateCount = dateCount.ToString() });
+                            db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua, Notice = item.IsNote.ToString() });
+                            db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
+                        }
+
                     }
                 }
-
                 Debug.Print("Update list");
-                updateListView();
-                updateShow("Success: " + this.numSuccess);
+                UpdateListView();
+                UpdateShow("Success: " + this.numSuccess);
                 Debug.Print("Change IP");
                 if (!changeIP())
                 {
-                    updateShow("Không change đươc IP");
+                    UpdateShow("Không change đươc IP");
                     return;
                 }
-                updateShow("Change xong IP");
+                UpdateShow("Change xong IP");
                 Debug.Print("Change xong IP");
             }
         }
 
         async Task<ChroniumReg> RegBrowseAsync(ChroniumReg chrome)
         {
-            bool isUnSupportBrowser = false;
-            Debug.Print("Chạy hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
             if (chrome.Browser != null)
             {
                 await chrome.Browser.ClearCookiesAsync();
@@ -235,16 +165,29 @@ namespace RegPlaywright
 
                 try
                 {
-                    var cookieadd = new List<SetNetworkCookieParam>
+                    if (isCCmoiD)
+                    {
+                        var cookieadd = new List<SetNetworkCookieParam>
                                     {
                                         new SetNetworkCookieParam {Url="https://p.facebook.com/", Name = "datr", Value = chrome.Info.Cookiedatr},
                                         new SetNetworkCookieParam {Url="https://www.facebook.com/", Name = "datr", Value = chrome.Info.Cookiedatr},
                                     };
-                    await chrome.Browser.AddCookiesAsync(cookieadd).ConfigureAwait(false);
+                        await chrome.Browser.AddCookiesAsync(cookieadd).ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        var cookieadd = new List<SetNetworkCookieParam>
+                                    {
+                                        new SetNetworkCookieParam {Url="https://p.facebook.com/", Name = "fr", Value = chrome.Info.CookieFr},
+                                        new SetNetworkCookieParam {Url="https://www.facebook.com/", Name = "fr", Value = chrome.Info.CookieFr},
+                                    };
+                        await chrome.Browser.AddCookiesAsync(cookieadd).ConfigureAwait(false);
+                    }
+                    
                 }
                 catch
                 {
-                    chrome.Info.Status = "Error reg";
+                    chrome.Info.Status = "Error set cc";
                     await chrome.Browser.CloseAsync().ConfigureAwait(false);
                     await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                     chrome.Dispose();
@@ -281,10 +224,8 @@ namespace RegPlaywright
                     }
                     try
                     {
-                        await Task.Delay(1000);
-                        isUnSupportBrowser = await Page.IsVisibleAsync("//h2[text()='Trình duyệt không được hỗ trợ']", 1000).ConfigureAwait(false);
-                        chrome.IsNote = isUnSupportBrowser;
-                        await Page.TypeAsync("//*[@name='lastname']", chrome.Info.Ho, delay: 1000).ConfigureAwait(false);
+                        await Task.Delay(2000);
+                        await Page.TypeAsync("//*[@name='lastname']", chrome.Info.Ho, delay: 150).ConfigureAwait(false);
                         await Task.Delay(new Random().Next(1500, 2000));
                         await Page.TypeAsync("//*[@name='firstname']", chrome.Info.Ten, delay: 150).ConfigureAwait(false);
                         await Task.Delay(new Random().Next(3000, 4000));
@@ -374,8 +315,6 @@ namespace RegPlaywright
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
-                        //GC.Collect();
-                        //GC.WaitForPendingFinalizers();
                         return chrome;
                     }
 
@@ -387,8 +326,6 @@ namespace RegPlaywright
                         await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
-                        //GC.Collect();
-                        //GC.WaitForPendingFinalizers();
                         return chrome;
 
                     }
@@ -416,7 +353,6 @@ namespace RegPlaywright
                         chrome.Dispose();
                         numSuccess++;
                         return chrome;
-                        //return infoItem;
                     }
                 }
                 chrome.Info.Status = "Error reg";
@@ -444,33 +380,25 @@ namespace RegPlaywright
                 {
                     if (string.IsNullOrEmpty(this.deviceChose))
                     {
-                        airPlanMod(deviceList[0]);
+                        AirPlanMod(deviceList[0]);
                     }
                     else
                     {
-                        airPlanMod(this.deviceChose);
+                        AirPlanMod(this.deviceChose);
                     }
 
                     //changeEmulator(deviceList[0]);
                     return true;
                 }
-                updateShow("Không tìm thấy thiết bị - thoát sau " + (30 - i).ToString() + "s");
-                sleep(1);
+                UpdateShow("Không tìm thấy thiết bị - thoát sau " + (30 - i).ToString() + "s");
+                Sleep(1);
             }
             return false;
-        }
-        void CreateAccAsync(Info infoItem, int x = 0, int y = 0, string proxy = null, int indexvalue = 0)
-        {
-            CancellationTokenSource cts = new CancellationTokenSource(TimeSpan.FromSeconds(150));
-
-            RegByChrome(infoItem, x, y, "", indexvalue).Wait(cts.Token);
-
-
         }
         void changeEmulator(string deviceChose)
         {
             NguyenHelper.ExecuteCMD(string.Format("adb -s {0} shell monkey -p com.device.emulator.pro -c android.intent.category.LAUNCHER 1", deviceChose));
-            sleep(1);
+            Sleep(1);
             NguyenHelper.clickElementXpath(deviceChose, "//node[@resource-id='com.device.emulator.pro:id/action_randomall']");
 
         }
@@ -524,534 +452,6 @@ namespace RegPlaywright
             } while (chromeItem.Browser == null && count > 0);
             return chromeItem;
         }
-        async Task<Info> RegByChrome(Info infoItem, int x = 0, int y = 0, string proxy = null, int indexvalue = 0)
-        {
-            Random rand = new Random();
-            int sex = rand.Next(1, 2);
-
-            LaunchPersistentOptions options = new LaunchPersistentOptions
-            {
-                Headless = false,
-                Args = new string[] {
-                "--window-position="+x+","+y,
-                "--app=https://p.facebook.com/",
-                "--disable-notifications",
-                "--blink-settings=imagesEnable=false",
-                "--window-size=250,300",
-                "--disable-extensions",
-                "--disable-translate",
-                "--disable-gpu"},
-                ExecutablePath = pathBrowser,
-                IgnoreDefaultArgs = new string[] {
-                    "--enable-automation",
-                    "--disable-infobars",
-                },
-                UserAgent = infoItem.Ua,
-                IgnoreAllDefaultArgs = false
-            };
-
-            using IPlaywright playwright = Playwright.CreateAsync().Result;
-            {
-                IChromiumBrowserContext browser = null;
-                do
-                {
-                    try
-                    {
-                        browser = await playwright.Chromium.LaunchPersistentContextAsync("", options);
-                    }
-                    catch
-                    {
-                        await browser.CloseAsync();
-                        await browser.DisposeAsync();
-                        browser = null;
-                    }
-                    await Task.Delay(500);
-                } while (browser == null);
-
-                await browser.ClearCookiesAsync();
-                await browser.ClearPermissionsAsync();
-
-                var Page = browser.Pages[0];
-                await Page.RouteAsync("**", (router, e) =>
-                {
-                    if (e.ResourceType == ResourceType.Image || e.ResourceType == ResourceType.Images || e.ResourceType == ResourceType.StyleSheet || e.ResourceType == ResourceType.Font || e.ResourceType == ResourceType.Media)
-                        router.AbortAsync();
-                    else
-                        router.ContinueAsync();
-                });
-
-                try
-                {
-                    var cookieadd = new List<SetNetworkCookieParam>
-                                    {
-                                        new SetNetworkCookieParam {Url="https://p.facebook.com/", Name = "datr", Value = infoItem.Cookiedatr},
-                                        new SetNetworkCookieParam {Url="https://www.facebook.com/", Name = "datr", Value = infoItem.Cookiedatr},
-                                    };
-                    await browser.AddCookiesAsync(cookieadd).ConfigureAwait(false);
-                }
-                catch
-                {
-                    infoItem.Status = "Error reg";
-                    await browser.CloseAsync().ConfigureAwait(false);
-                    await browser.DisposeAsync().ConfigureAwait(false);
-                    //GC.Collect();
-                    //GC.WaitForPendingFinalizers();
-                    return infoItem;
-                }
-
-                int count = 5;
-                bool creation = false;
-                while (count > 0 && !creation)
-                {
-
-                    try
-                    {
-                        creation = await Page.IsVisibleAsync("#signup-button", 1000).ConfigureAwait(false);
-                    }
-                    catch { }
-                    count--;
-                }
-
-
-                if (count > 0)
-                {
-                    await Task.Delay(2000);
-                    try
-                    {
-                        await Page.ClickAsync("#signup-button").ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        infoItem.Status = "Error net";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        return infoItem;
-                    }
-                    try
-                    {
-                        await Task.Delay(1000);
-                        await Page.TypeAsync("//*[@name='lastname']", infoItem.Ho, delay: new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.TypeAsync("//*[@name='firstname']", infoItem.Ten, delay: new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.SelectOptionAsync("#day", infoItem.Birth_day.ToString()).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.SelectOptionAsync("#month", infoItem.Birth_month.ToString()).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.SelectOptionAsync("#year", infoItem.Birth_year.ToString()).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']");
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.TypeAsync("//*[@name='reg_email__']", infoItem.Sdt, delay: new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        if (sex == 1)
-                        {
-                            await Page.CheckAsync("#Nam").ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await Page.CheckAsync("#Nữ").ConfigureAwait(false);
-                        }
-                        //await Page.CheckAsync("//input[@id='sex' and @value='"+sex+"']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        if (await Page.IsVisibleAsync("//*/button[@value='Tiếp']"))
-                        {
-                            infoItem.Status = "Error input";
-                            await browser.CloseAsync();
-                            await browser.DisposeAsync();
-                            checkChrome--;
-                            return infoItem;
-                        }
-                        await Page.TypeAsync("#password_step_input", infoItem.Pass, new Random().Next(150, 300)).ConfigureAwait(false);
-
-                        await Task.Delay(7000);
-                        int count_limit = 300;
-                        bool check_v2 = true;
-                        while (checkChrome > 0 && count_limit > 0)
-                        {
-                            try
-                            {
-                                bool signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-
-                                if (signup && check_v2)
-                                {
-                                    check_v2 = false;
-                                    checkChrome--;
-                                }
-                            }
-                            catch { }
-                            await Task.Delay(100);
-                            count_limit--;
-                            if (count_limit == 0)
-                                checkChrome = 0;
-                        }
-                        await Page.ClickAsync("//*/button[@value='Đăng ký']");
-                    }
-                    catch
-                    {
-                        infoItem.Status = "Error input";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        return infoItem;
-                    }
-                    count = 30;
-                    bool error = false;
-                    bool checkpoint = false;
-                    bool done = false;
-                    while (count > 0 & !error & !checkpoint & !done)
-                    {
-                        error = Page.Url.Contains("error");
-                        checkpoint = Page.Url.Contains("checkpoint");
-                        done = Page.Url.Contains("save-device");
-                        count--;
-                        await Task.Delay(1000);
-                    }
-
-                    if (count <= 0)
-                    {
-                        infoItem.Status = "Out Time";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        //GC.Collect();
-                        //GC.WaitForPendingFinalizers();
-                        return infoItem;
-
-                    }
-
-                    if (error)
-                    {
-                        infoItem.Status = "Error";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        //GC.Collect();
-                        //GC.WaitForPendingFinalizers();
-                        return infoItem;
-                    }
-
-                    if (checkpoint)
-                    {
-
-                        infoItem.Status = "CheckPoint";
-
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        //GC.Collect();
-                        //GC.WaitForPendingFinalizers();
-                        return infoItem;
-
-                    }
-
-                    if (done)
-                    {
-
-                        infoItem.Status = "Success";
-                        var ak = (await browser.GetCookiesAsync("https://facebook.com/").ConfigureAwait(false)).ToList();
-                        List<string> values = new List<string>();
-                        ak.ForEach(item =>
-                        {
-                            if (item.Name.Contains("datr") || item.Name.Contains("sb") || item.Name.Contains("c_user") || item.Name.Contains("xs"))
-                                values.Add($"{item.Name}={item.Value}");
-                        });
-                        string result = string.Join(";", values);
-                        string pattern = @"c_user=(\d+)";
-                        string id = Regex.Match(result, pattern).Groups[1].Value.ToString();
-                        infoItem.Uid = id;
-                        infoItem.Cookie = result;
-                        infoItem.Datecreate = DateTime.UtcNow;
-
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        //GC.Collect();
-                        //GC.WaitForPendingFinalizers();
-                        numSuccess++;
-                        return infoItem;
-                        //return infoItem;
-                    }
-                }
-                infoItem.Status = "Error reg";
-                await browser.CloseAsync().ConfigureAwait(false);
-                await browser.DisposeAsync().ConfigureAwait(false);
-                //GC.Collect();
-                //GC.WaitForPendingFinalizers();
-                return infoItem;
-            }
-        }
-        void test()
-        {
-            string deviceID = "xxx";
-            string app = "test1";
-            string link = "test2";
-            string x = ("adb -s " + deviceID + $" shell am start -a android.intent.action.VIEW -d {app}://{link}");
-            MessageBox.Show(x);
-        }
-
-        async Task<Info> RegByFirefox(Info infoItem, int x = 0, int y = 0, string proxy = null, int indexvalue = 0)
-        {
-            Random rand = new Random();
-            int sex = rand.Next(1, 2);
-
-            LaunchPersistentOptions options = new LaunchPersistentOptions
-            {
-                Headless = false,
-                Args = new string[] {
-                "--window-position="+x+","+y,
-                "--app=https://p.facebook.com/",
-                "--disable-notifications",
-                "--blink-settings=imagesEnable=false",
-                "--window-size=250,300",
-                "--disable-extensions",
-                "--disable-translate",
-                "--disable-gpu",
-                "media.peerconnection.enabled=false"},
-                ExecutablePath = pathBrowser,
-                IgnoreDefaultArgs = new string[] {
-                    "--enable-automation",
-                    "--disable-infobars",
-                },
-                UserAgent = infoItem.Ua,
-                IgnoreAllDefaultArgs = false
-            };
-            ;
-            using IPlaywright playwright = Playwright.CreateAsync().Result;
-            {
-                IBrowserContext browser = null;
-                do
-                {
-                    try
-                    {
-                        browser = await playwright.Firefox.LaunchPersistentContextAsync("", options);
-                    }
-                    catch
-                    {
-                        await browser.CloseAsync();
-                        await browser.DisposeAsync();
-                        browser = null;
-                    }
-                    await Task.Delay(500);
-                } while (browser == null);
-                await browser.ClearCookiesAsync();
-                await browser.ClearPermissionsAsync();
-                try
-                {
-                    var cookieadd = new List<SetNetworkCookieParam>
-                {
-                    new SetNetworkCookieParam {Url="https://p.facebook.com/", Name = "datr", Value = infoItem.Cookiedatr},
-                    new SetNetworkCookieParam {Url="https://p.facebook.com/", Name = "fr", Value = infoItem.CookieFr}
-                };
-                    //                    new SetNetworkCookieParam {Domain=".facebook.com",Path="/", Name = "datr", Value = infoItem.Cookiedatr},
-                    //new SetNetworkCookieParam { Domain = ".facebook.com", Path = "/", Name = "fr", Value = infoItem.CookieFr }
-                    await browser.AddCookiesAsync(cookieadd);
-                }
-                catch
-                {
-                    infoItem.Status = "Error reg";
-                    await browser.CloseAsync().ConfigureAwait(false);
-                    await browser.DisposeAsync().ConfigureAwait(false);
-                    GC.Collect();
-                    GC.WaitForPendingFinalizers();
-                    return infoItem;
-                }
-                var Page = browser.Pages[0];
-                await Page.AddInitScriptAsync("<script>" +
-                    "function initFingerprintJS() {" +
-                    "FingerprintJS.load({ token: 'EFzvvALtV68gUDWLuzGg'})" +
-                    ".then(fp => fp.get())" +
-                    ".then(result => console.log(result.visitorId));" +
-                    "}" +
-                    " async " +
-                    "src=\"https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs-pro@3/dist/fp.min.js\"" +
-                    " onload=\"initFingerprintJS()\"" +
-                    " </script>");
-
-                int count = 5;
-                bool creation = false;
-                while (count > 0 && !creation)
-                {
-
-                    try
-                    {
-                        creation = await Page.IsVisibleAsync("#signup-button", 1000).ConfigureAwait(false);
-                    }
-                    catch { }
-                    count--;
-                }
-
-
-                if (count > 0)
-                {
-                    await Task.Delay(2000);
-                    try
-                    {
-                        await Page.ClickAsync("#signup-button").ConfigureAwait(false);
-                    }
-                    catch
-                    {
-                        infoItem.Status = "Error net";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        return infoItem;
-                    }
-                    try
-                    {
-                        await Task.Delay(1000);
-                        await Page.TypeAsync("//*[@name='lastname']", infoItem.Ho, delay: new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.TypeAsync("//*[@name='firstname']", infoItem.Ten, delay: new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.SelectOptionAsync("#day", infoItem.Birth_day.ToString()).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.SelectOptionAsync("#month", infoItem.Birth_month.ToString()).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.SelectOptionAsync("#year", infoItem.Birth_year.ToString()).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']");
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        await Page.TypeAsync("//*[@name='reg_email__']", infoItem.Sdt, delay: new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        if (sex == 1)
-                        {
-                            await Page.CheckAsync("#Nam").ConfigureAwait(false);
-                        }
-                        else
-                        {
-                            await Page.CheckAsync("#Nữ").ConfigureAwait(false);
-                        }
-                        //await Page.CheckAsync("//input[@id='sex' and @value='"+sex+"']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
-                        await Task.Delay(new Random().Next(1500, 2000));
-                        if (await Page.IsVisibleAsync("//*/button[@value='Tiếp']"))
-                        {
-                            infoItem.Status = "Error input";
-                            await browser.CloseAsync();
-                            await browser.DisposeAsync();
-                            checkChrome--;
-                            return infoItem;
-                        }
-                        await Page.TypeAsync("#password_step_input", infoItem.Pass, new Random().Next(150, 300)).ConfigureAwait(false);
-                        await Task.Delay(7000);
-                        int count_limit = 300;
-                        bool check_v2 = true;
-                        while (checkChrome > 0 && count_limit > 0)
-                        {
-                            try
-                            {
-                                bool signup = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-
-                                if (signup && check_v2)
-                                {
-                                    check_v2 = false;
-                                    checkChrome--;
-                                }
-                            }
-                            catch { }
-                            await Task.Delay(100);
-                            count_limit--;
-                            if (count_limit == 0)
-                                checkChrome = 0;
-                        }
-                        await Page.ClickAsync("//*/button[@value='Đăng ký']");
-                    }
-                    catch
-                    {
-                        infoItem.Status = "Error input";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        return infoItem;
-                    }
-                    count = 30;
-                    bool error = false;
-                    bool checkpoint = false;
-                    bool done = false;
-                    while (count > 0 & !error & !checkpoint & !done)
-                    {
-                        error = Page.Url.Contains("error");
-                        checkpoint = Page.Url.Contains("checkpoint");
-                        done = Page.Url.Contains("save-device");
-                        count--;
-                        await Task.Delay(1000);
-                    }
-
-                    if (count <= 0)
-                    {
-                        infoItem.Status = "Out Time";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        return infoItem;
-
-                    }
-
-                    if (error)
-                    {
-                        infoItem.Status = "Error";
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        return infoItem;
-                    }
-
-                    if (checkpoint)
-                    {
-
-                        infoItem.Status = "CheckPoint";
-
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        return infoItem;
-
-                    }
-
-                    if (done)
-                    {
-
-                        infoItem.Status = "Success";
-                        var ak = (await browser.GetCookiesAsync("https://facebook.com/").ConfigureAwait(false)).ToList();
-                        List<string> values = new List<string>();
-                        ak.ForEach(item =>
-                        {
-                            if (item.Name.Contains("datr") || item.Name.Contains("sb") || item.Name.Contains("c_user") || item.Name.Contains("xs"))
-                                values.Add($"{item.Name}={item.Value}");
-                        });
-                        string result = string.Join(";", values);
-                        string pattern = @"c_user=(\d+)";
-                        string id = Regex.Match(result, pattern).Groups[1].Value.ToString();
-                        infoItem.Uid = id;
-                        infoItem.Cookie = result;
-                        infoItem.Datecreate = DateTime.UtcNow;
-                        await browser.CloseAsync().ConfigureAwait(false);
-                        await browser.DisposeAsync().ConfigureAwait(false);
-                        GC.Collect();
-                        GC.WaitForPendingFinalizers();
-                        numSuccess++;
-                        return infoItem;
-                        //return infoItem;
-                    }
-                }
-                infoItem.Status = "Error reg";
-                await browser.CloseAsync().ConfigureAwait(false);
-                await browser.DisposeAsync().ConfigureAwait(false);
-                GC.Collect();
-                GC.WaitForPendingFinalizers();
-                return infoItem;
-
-            }
-        }
-
         void UpdateShow(string status)
         {
             Dispatcher.Invoke(new Action(() =>
@@ -1059,7 +459,7 @@ namespace RegPlaywright
                 this.labShow.Content = status;
             }));
         }
-        void getCPUsage()
+        void GetCPUsage()
         {
             try
             {
@@ -1087,7 +487,7 @@ namespace RegPlaywright
             }
 
         }
-        private void fakeBySSH()
+        private void FakeBySSH()
         {
             try
             {
@@ -1108,7 +508,7 @@ namespace RegPlaywright
                 // MessageBox.Show("3G error. Vui lòng bật ssh");
             }
         }
-        void airPlanMod(string deviceChose)
+        void AirPlanMod(string deviceChose)
         {
 
             try
@@ -1144,7 +544,7 @@ namespace RegPlaywright
                         NguyenHelper.Tap(deviceChose, (int)vitritrungtam.X, (int)vitritrungtam.Y);
                     }
                 }
-                sleep(3);
+                Sleep(3);
             batAir:
                 element = NguyenHelper.findElementByXpath(deviceChose, "//node[@resource-id='com.android.settings:id/switch_widget']");
                 //Kiểm tra, nếu đã bật thì tắt airplane mod
@@ -1195,14 +595,7 @@ namespace RegPlaywright
             catch { }
 
         }
-        void updateShow(string value)
-        {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                labShow.Content = value;
-            }));
-        }
-        void updateListView()
+        void UpdateListView()
         {
             Dispatcher.Invoke(new Action(() =>
             {
@@ -1210,11 +603,11 @@ namespace RegPlaywright
             }));
         }
 
-        void sleep(int timeSleep)
+        void Sleep(int timeSleep)
         {
             Thread.Sleep(TimeSpan.FromSeconds(timeSleep));
         }
-        private void txbSoLuong_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void TxbSoLuong_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             try
             {
@@ -1223,7 +616,7 @@ namespace RegPlaywright
             catch { this.numThread = 1; }
 
         }
-        public void changeIPDcom(string mang, bool Dcom = false)
+        public void ChangeIPDcom(string mang, bool Dcom = false)
         {
             try
             {
@@ -1251,7 +644,7 @@ namespace RegPlaywright
             }
 
         }
-        private void btnReg_Click(object sender, RoutedEventArgs e)
+        private void BtnReg_Click(object sender, RoutedEventArgs e)
         {
 
             Thread ts = new Thread(CreatAcMulti_v2)
@@ -1261,7 +654,7 @@ namespace RegPlaywright
             ts.Start();
         }
 
-        private void txbSoLuong_Copy_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void TxbSoLuong_Copy_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             try
             {
@@ -1270,13 +663,71 @@ namespace RegPlaywright
             catch { this.numTabSameTime = 4; }
         }
 
-        private void txbSoLuong_Copy1_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        private void TxbSoLuong_Copy1_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
         {
             try
             {
                 this.deviceChose = txbSoLuong_Copy1.Text;
             }
             catch { }
+        }
+
+        private void Txb_pathCCmoi_TextChanged(object sender, System.Windows.Controls.TextChangedEventArgs e)
+        {
+
+        }
+
+        private void Button_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPathHo_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPathCC_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPathTen_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void CheckBox_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ChbMoiD_Click(object sender, RoutedEventArgs e)
+        {
+            if (chbMoiD.IsChecked.Value)
+            {
+                this.isCCmoiD = true;
+                chbMoiF.IsChecked = false;
+            }  
+        }
+
+        private void ChbMoiF_Click(object sender, RoutedEventArgs e)
+        {
+            if (chbMoiF.IsChecked.Value)
+            {
+                this.isCCmoiD = false;
+                chbMoiD.IsChecked = false;
+            }
+        }
+
+        private void ChbMoiDF_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void BtnPathBrowser_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

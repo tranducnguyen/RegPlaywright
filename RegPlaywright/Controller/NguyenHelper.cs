@@ -446,34 +446,29 @@ namespace RegPlaywright.Controller
         }
         public static string GetIP()
         {
-            using (WebClient client = new WebClient())
+            using WebClient client = new WebClient();
+            try
             {
-                try
-                {
-                    string html = client.DownloadString("http://api.ipify.org/?format=json");
-                    String match = Regex.Match(html, @"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b").Groups[0].ToString();
-                    return match;
-                }
-                catch { return null; }
-                
+                string html = client.DownloadString("http://api.ipify.org/?format=json");
+                String match = Regex.Match(html, @"\b(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\b").Groups[0].ToString();
+                return match;
             }
-            
+            catch { return null; }
+
         }
         public static bool GetPercentIP()
         {
-            using (WebClient client = new WebClient())
+            using WebClient client = new WebClient();
+            string html = client.DownloadString("https://whoer.net/");
+            Match match = Regex.Match(html, @"dsbl : ([^\n]+)", RegexOptions.IgnoreCase);
+            if (match.Success)
             {
-                string html = client.DownloadString("https://whoer.net/");
-                Match match = Regex.Match(html, @"dsbl : ([^\n]+)", RegexOptions.IgnoreCase);
-                if (match.Success)
+                if (match.Groups[1].Value.ToString() != "0")
                 {
-                    if (match.Groups[1].Value.ToString() != "0")
-                    {
-                        return true;
-                    }
+                    return true;
                 }
-                return false;
             }
+            return false;
         }
         public static string RunCMD(string cmd)
         {
@@ -498,7 +493,7 @@ namespace RegPlaywright.Controller
             {
                 text = text + " && " + string.Format(NguyenHelper.TAP_DEVICES, deviceID, x, y);
             }
-            string text2 = NguyenHelper.ExecuteCMD(text);
+            NguyenHelper.ExecuteCMD(text);
         }
         
     }

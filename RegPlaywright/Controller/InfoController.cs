@@ -28,6 +28,7 @@ namespace RegPlaywright.Controller
             string sIP = NguyenHelper.GetIP();
             List<String> listCookie = new List<string>(arrCookie);
             Dictionary<String, String> dicCookie = new Dictionary<string, string>();
+            string cookie;
             string cookieMoidatr = "";
             string cookieMoiFr = "";
             var randomSdt_Vi = RandomizerFactory.GetRandomizer(new FieldOptionsTextRegex { Pattern = @"+84(098|096|097|032|035|036|037|038|039|090|093|070|079|077|076|091|094|083|084|085|081|092|056|058|099|059)[0-9]{7}" });
@@ -74,9 +75,10 @@ namespace RegPlaywright.Controller
 
             layCookie:
                 indexRandom = new Random().Next(listCookie.Count);
-
-                cookieMoidatr = Regex.Match(listCookie[indexRandom].Trim().Replace(" ", ""), "datr=(.*?);", RegexOptions.Singleline).Groups[0].ToString().Replace("datr=", "").Replace(";", "").Trim();
-                cookieMoiFr = Regex.Match(listCookie[indexRandom].Trim().Replace(" ", ""), "fr=(.*?);", RegexOptions.Singleline).Groups[0].ToString().Replace("fr=", "").Replace(";", "").Trim();
+                cookie = listCookie[indexRandom].Trim().Replace(" ", "");
+                cookie += ";";
+                cookieMoidatr = Regex.Match(cookie, "datr=(.*?);", RegexOptions.Singleline).Groups[0].ToString().Replace("datr=", "").Replace(";", "").Trim();
+                cookieMoiFr = Regex.Match(cookie, "fr=(.*?);", RegexOptions.Singleline).Groups[0].ToString().Replace("fr=", "").Replace(";", "").Trim();
 
                 if (string.IsNullOrWhiteSpace(cookieMoidatr))
                 {
@@ -87,7 +89,7 @@ namespace RegPlaywright.Controller
                     dicCookie.Add(cookieMoidatr, i.ToString());
                     info.Cookiedatr = cookieMoidatr;
                     info.CookieFr = cookieMoiFr;
-                    info.Cookiemoi = listCookie[indexRandom];
+                    info.Cookiemoi = cookie;
                 }
                 else
                 {

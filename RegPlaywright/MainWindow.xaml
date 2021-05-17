@@ -5,12 +5,56 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:RegPlaywright"
         mc:Ignorable="d"
-        Title="MainWindow" Height="482" Width="900">
-    <Grid Margin="0,0,0,-16">
-        <Button x:Name="btnReg" Content="REG" HorizontalAlignment="Left" Margin="246,14,0,0" VerticalAlignment="Top" Click="btnReg_Click" Width="65" Height="22"/>
-        <TextBox x:Name="txbSoLuong" HorizontalAlignment="Left" Height="26" Margin="132,12,0,0" Text="3" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="txbSoLuong_TextChanged"/>
-        <Label Content="Số luồng" HorizontalAlignment="Left" Margin="10,10,0,0" VerticalAlignment="Top"/>
-        <ListView x:Name="lsvData" HorizontalAlignment="Left" Height="305" Margin="0,110,0,0" VerticalAlignment="Top" Width="890">
+        Title="" Height="550" Width="900" Foreground="#FF9F10F1" >
+    <Grid Margin="0,0,0,0">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="13*"/>
+            <ColumnDefinition Width="17*"/>
+        </Grid.ColumnDefinitions>
+        <TabControl Grid.ColumnSpan="2">
+            <TabItem Header="General">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="71*"/>
+                        <ColumnDefinition Width="142*"/>
+                        <ColumnDefinition Width="681*"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox x:Name="txbSoLuong" HorizontalAlignment="Left" Height="26" Margin="61,12,0,0" Text="12" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="TxbSoLuong_TextChanged" Grid.Column="1"/>
+                    <Label Content="Số luồng" HorizontalAlignment="Left" Margin="5,10,0,0" VerticalAlignment="Top"/>
+                    <TextBox x:Name="txbSoLuong_Copy" HorizontalAlignment="Left" Height="25" Margin="61,42,0,0" Text="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="TxbSoLuong_Copy_TextChanged" Grid.Column="1"/>
+                    <Label Content="Số tab same time" HorizontalAlignment="Left" Margin="5,41,0,0" VerticalAlignment="Top" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txbSoLuong_Copy1" HorizontalAlignment="Left" Height="25" Margin="61,80,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="210" TextChanged="TxbSoLuong_Copy1_TextChanged" Grid.Column="1" Grid.ColumnSpan="2"/>
+                    <Label Content="Tên device" HorizontalAlignment="Left" Margin="5,79,0,0" VerticalAlignment="Top" Width="100" Grid.ColumnSpan="2"/>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Setting" Height="20" VerticalAlignment="Top">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="14*"/>
+                        <ColumnDefinition Width="135*"/>
+                    </Grid.ColumnDefinitions>
+                    <Label Content="File cc mồi" HorizontalAlignment="Left" Margin="5,0,0,0" VerticalAlignment="Top" Width="100" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txb_pathCCmoi" HorizontalAlignment="Left" Height="25" Margin="15,0,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150"  Grid.Column="1"/>
+                    <Button x:Name="btnPathCC" Content="Path" Grid.Column="1" HorizontalAlignment="Left" Margin="168,3,0,0" VerticalAlignment="Top" Click="BtnPathCC_Click"/>
+
+                    <Label Content="File họ" HorizontalAlignment="Left" Margin="5,30,0,0" VerticalAlignment="Top" Width="100"/>
+                    <TextBox x:Name="txb_pathHo" HorizontalAlignment="Left" Height="25" Margin="15,30,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Grid.Column="1"/>
+                    <Button x:Name="btnPathHo" Content="Path" Grid.Column="1" HorizontalAlignment="Left" Margin="168,33,0,0" VerticalAlignment="Top" Click="BtnPathHo_Click"/>
+
+                    <Label Content="File tên" HorizontalAlignment="Left" Margin="5,60,0,0" VerticalAlignment="Top" Width="100"/>
+                    <TextBox x:Name="txb_pathTen" HorizontalAlignment="Left" Height="25" Margin="15,60,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Grid.Column="1"/>
+                    <Button x:Name="btnPathTen" Content="Path" Grid.Column="1" HorizontalAlignment="Left" Margin="168,63,0,0" VerticalAlignment="Top" Click="BtnPathTen_Click"/>
+                    <CheckBox x:Name="chbMoiD" Content="Mồi D" Grid.Column="1" HorizontalAlignment="Left" Margin="238,6,0,0" VerticalAlignment="Top" Click="ChbMoiD_Click" IsChecked="True"/>
+                    <CheckBox x:Name="chbMoiF" Content="Mồi F" Grid.Column="1" HorizontalAlignment="Left" Margin="317,6,0,0" VerticalAlignment="Top" Click="ChbMoiF_Click"/>
+                    <CheckBox x:Name="chbMoiDF" Content="Mồi DF" Grid.Column="1" HorizontalAlignment="Left" Margin="388,6,0,0" VerticalAlignment="Top" Click="ChbMoiDF_Click"/>
+                    <CheckBox x:Name="chbSortWindow" Content="Sắp sếp cửa sổ" Grid.Column="1" HorizontalAlignment="Left" Margin="238,31,0,0" VerticalAlignment="Top"/>
+                    <Label Content="File exe browser" HorizontalAlignment="Left" Margin="5,85,0,0" VerticalAlignment="Top" Width="100" Grid.ColumnSpan="2"/>
+                    <TextBox x:Name="txbPathBrowser" HorizontalAlignment="Left" Height="25" Margin="15,85,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="150" Grid.Column="1"/>
+                    <Button x:Name="btnPathBrowser" Content="Path" Grid.Column="1" HorizontalAlignment="Left" Margin="168,88,0,0" VerticalAlignment="Top" Click="BtnPathBrowser_Click"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+        <ListView x:Name="lsvData" HorizontalAlignment="Left" Height="305" Margin="0,140,0,0" VerticalAlignment="Top" Width="890" Grid.ColumnSpan="2">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Header="UID" Width="120" DisplayMemberBinding="{Binding Uid}"/>
@@ -24,11 +68,8 @@
                 </GridView>
             </ListView.View>
         </ListView>
-        <Label x:Name="labShow" Content="Label" HorizontalAlignment="Left" Height="40" Margin="338,14,0,0" VerticalAlignment="Top" Width="324"/>
-        <TextBox x:Name="txbSoLuong_Copy" HorizontalAlignment="Left" Height="25" Margin="132,42,0,0" Text="4" TextWrapping="Wrap" VerticalAlignment="Top" Width="65" TextChanged="txbSoLuong_Copy_TextChanged"/>
-        <Label Content="Số tab same time" HorizontalAlignment="Left" Margin="10,41,0,0" VerticalAlignment="Top"/>
-        <TextBox x:Name="txbSoLuong_Copy1" HorizontalAlignment="Left" Height="25" Margin="132,80,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="113" TextChanged="txbSoLuong_Copy1_TextChanged"/>
-        <Label Content="Tên device" HorizontalAlignment="Left" Margin="10,79,0,0" VerticalAlignment="Top" Width="100"/>
-
+        <Label x:Name="labShow" Content="Success" HorizontalAlignment="Left" Height="50" Margin="100,450,0,0" VerticalAlignment="Top" Width="324" Grid.ColumnSpan="2"/>
+        <Button x:Name="btnReg" Content="REG" HorizontalAlignment="Left" Margin="410,450,0,0" VerticalAlignment="Top" Click="BtnReg_Click" Width="65" Height="22" Grid.Column="1"/>
+        <Label x:Name="labTiLe" Content="Tỉ lệ" HorizontalAlignment="Center" Height="25" Margin="0,454,0,0" VerticalAlignment="Top" Width="170" Grid.Column="1"/>
     </Grid>
 </Window>
