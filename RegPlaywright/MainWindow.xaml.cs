@@ -162,10 +162,8 @@ namespace RegPlaywright
                     int x = 100 + ((vitri % 4) * 250);
                     int y = (vitri / 4) * 150;
                     index++;
-                    using var cts = new CancellationTokenSource();
-                    cts.CancelAfter(TimeSpan.FromSeconds(150));
                     await Task.Delay(100);
-                    await CreateBrowseAsync(item, cts, x, y, "", vitri).ConfigureAwait(false);
+                    await CreateBrowseAsync(item, x, y, "", vitri).ConfigureAwait(false);
 
                 },
                 maxDegreeOfParallelism: this.numTabSameTime,
@@ -192,14 +190,14 @@ namespace RegPlaywright
                     if (item.Info.Status.Contains("Success") && item.Info.Status != null)
                     {
                         db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "Success", DateCount = dateCount.ToString() });
-                        db.AddUA(new UAList { CheckPoint = "0", Success = "1", UA = item.Info.Ua });
+                        db.AddUA(new UAList { CheckPoint = "0", Success = "1", UA = item.Info.Ua, Notice = item.IsNote.ToString() });
                         db.AddIP(new IPInfo { CheckPoint = "0", Success = "1", IP = item.Info.Ip });
 
                     }
                     else
                     {
                         db.AddPhone(new PhoneList { Phone = item.Info.Sdt, Active = "checkpoint", DateCount = dateCount.ToString() });
-                        db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua });
+                        db.AddUA(new UAList { CheckPoint = "1", Success = "0", UA = item.Info.Ua, Notice = item.IsNote.ToString() });
                         db.AddIP(new IPInfo { CheckPoint = "1", Success = "0", IP = item.Info.Ip });
                     }
                 }
@@ -220,6 +218,7 @@ namespace RegPlaywright
 
         async Task<ChroniumReg> RegBrowseAsync(ChroniumReg chrome)
         {
+            bool isUnSupportBrowser = false;
             Debug.Print("Chạy hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
             if (chrome.Browser != null)
             {
@@ -283,7 +282,9 @@ namespace RegPlaywright
                     try
                     {
                         await Task.Delay(1000);
-                        await Page.TypeAsync("//*[@name='lastname']", chrome.Info.Ho, delay: 150).ConfigureAwait(false);
+                        isUnSupportBrowser = await Page.IsVisibleAsync("//h2[text()='Trình duyệt không được hỗ trợ']", 1000).ConfigureAwait(false);
+                        chrome.IsNote = isUnSupportBrowser;
+                        await Page.TypeAsync("//*[@name='lastname']", chrome.Info.Ho, delay: 1000).ConfigureAwait(false);
                         await Task.Delay(new Random().Next(1500, 2000));
                         await Page.TypeAsync("//*[@name='firstname']", chrome.Info.Ten, delay: 150).ConfigureAwait(false);
                         await Task.Delay(new Random().Next(3000, 4000));
@@ -295,7 +296,7 @@ namespace RegPlaywright
                         await Task.Delay(new Random().Next(1500, 2000));
                         await Page.SelectOptionAsync("#year", chrome.Info.Birth_year.ToString()).ConfigureAwait(false);
                         await Task.Delay(new Random().Next(3000, 4000));
-                        await Page.ClickAsync("//*/button[@type='submit']");
+                        await Page.ClickAsync("//*/button[@type='submit']").ConfigureAwait(false);
                         await Task.Delay(new Random().Next(1500, 2000));
                         await Page.TypeAsync("//*[@name='reg_email__']", chrome.Info.Sdt, delay: 150).ConfigureAwait(false);
                         await Task.Delay(new Random().Next(3000, 4000));
@@ -319,7 +320,7 @@ namespace RegPlaywright
                         {
                             try
                             {
-                                signup1 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
+                                signup1 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100).ConfigureAwait(false);
 
                                 if (signup1 && check_v2)
                                 {
@@ -327,13 +328,13 @@ namespace RegPlaywright
                                     checkChrome--;
                                 }
                             }
-                            catch {}
+                            catch { }
                             await Task.Delay(100);
                             count_limit--;
                             if (count_limit == 0)
                                 checkChrome = 0;
                         }
-                        await Page.ClickAsync("//*/button[@value='Đăng ký']");
+                        await Page.ClickAsync("//*/button[@value='Đăng ký']").ConfigureAwait(false);
                     }
                     catch
                     {
@@ -343,17 +344,6 @@ namespace RegPlaywright
                         chrome.Dispose();
                         return chrome;
                     }
-                    //bool signup2 = false;
-                    //try
-                    //{
-                    //    signup2 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100);
-                    //    if (signup2)
-                    //    {
-                    //        await Page.ClickAsync("//*/button[@value='Đăng ký']");
-                    //    }
-                    //}
-                    //catch { }
-
                     count = 30;
                     bool error = false;
                     bool checkpoint = false;
@@ -485,7 +475,7 @@ namespace RegPlaywright
 
         }
 
-        async Task<ChroniumReg> CreateBrowseAsync(ChroniumReg chromeItem, CancellationTokenSource token, int x = 0, int y = 0, string v = null, int indexvalue = 0)
+        async Task<ChroniumReg> CreateBrowseAsync(ChroniumReg chromeItem, int x = 0, int y = 0, string v = null, int indexvalue = 0)
         {
             LaunchPersistentOptions options = new LaunchPersistentOptions
             {

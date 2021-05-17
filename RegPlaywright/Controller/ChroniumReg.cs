@@ -12,6 +12,8 @@ namespace RegPlaywright.Controller
         public IChromiumBrowserContext Browser { get; set; }
         public IPage Page { get; set; }
         public Info Info { get; set; }
+
+        public bool IsNote { get; set; }
         public int Index { get; set; }
         public void Dispose()
         {

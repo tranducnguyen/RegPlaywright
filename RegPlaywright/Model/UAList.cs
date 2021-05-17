@@ -9,5 +9,6 @@ namespace RegPlaywright.Model
         public string UA { get; set; }
         public string CheckPoint { get; set; }
         public string Success { get; set; }
+        public string Notice { get; set; }
     }
 }
