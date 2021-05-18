@@ -71,10 +71,10 @@ namespace RegPlaywright
                     };
                     listChrome.Add(chromeReg);
                 }
-                Dispatcher.Invoke(new Action(() =>
-                {
-                    lsvData.ItemsSource = listInfo;
-                }));
+                //Dispatcher.Invoke(new Action(() =>
+                //{
+                //    lsvData.ItemsSource = listInfo;
+                //}));
                 int index = 0;
 
                 using var ctsAll = new CancellationTokenSource();
@@ -134,8 +134,8 @@ namespace RegPlaywright
 
                     }
                 }
-                Debug.Print("Update list");
-                UpdateListView();
+                //Debug.Print("Update list");
+                //UpdateListView();
                 UpdateShow("Success: " + this.numSuccess);
                 Debug.Print("Change IP");
                 if (!changeIP())
@@ -143,7 +143,7 @@ namespace RegPlaywright
                     UpdateShow("Không change đươc IP");
                     return;
                 }
-                UpdateShow("Change xong IP");
+                //UpdateShow("Change xong IP");
                 Debug.Print("Change xong IP");
             }
         }
@@ -261,9 +261,10 @@ namespace RegPlaywright
                         {
                             try
                             {
-                                signup1 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100).ConfigureAwait(false);
+                                await Task.Delay(1000).ConfigureAwait(false);
+                                //signup1 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100).ConfigureAwait(false);
 
-                                if (signup1 && check_v2)
+                                if (check_v2)
                                 {
                                     check_v2 = false;
                                     checkChrome--;
@@ -304,17 +305,15 @@ namespace RegPlaywright
 
                     while (count > 0 & !error & !checkpoint & !done)
                     {
-                        string fullContent = await Page.GetContentAsync().ConfigureAwait(false);
 
-                        string urlPage = Page.Url;
 
-                        error = urlPage.Contains("error")||fullContent.Contains("Chúng tôi cần thêm thông tin");
-                        checkpoint = urlPage.Contains("checkpoint");
-                        done = urlPage.Contains("save-device")||fullContent.Contains("Đăng nhập bằng");
+                        error = Page.Url.Contains("error");
+                        checkpoint = Page.Url.Contains("checkpoint");
+                        done = Page.Url.Contains("save-device");
                         count--;
                         await Task.Delay(1000).ConfigureAwait(false);
                     }
-
+                
                     if (count <= 0)
                     {
                         chrome.Info.Status = "Out Time";
@@ -440,7 +439,7 @@ namespace RegPlaywright
                 },
                 UserAgent = chromeItem.Info.Ua,
                 IgnoreAllDefaultArgs = false,
-                Timeout = 180000
+                Timeout = 120000
             };
 
             chromeItem.Browser = null;
@@ -470,10 +469,11 @@ namespace RegPlaywright
         }
         void UpdateShow(string status)
         {
-            Dispatcher.Invoke(new Action(() =>
-            {
-                this.labShow.Content = status;
-            }));
+            Debug.Print( DateTime.Now.ToString() +"--"+ status);
+            //Dispatcher.Invoke(new Action(() =>
+            //{
+            //    this.labShow.Content = status;
+            //}));
         }
         void GetCPUsage()
         {
