@@ -56,6 +56,7 @@ namespace RegPlaywright
             DateTime dateCheck = new DateTime(2021, 5, 11);
             int dateCount = dateNow.Subtract(dateCheck).Days;
             DbAction db = new DbAction();
+           
             for (int k = 0; k < 5000; k++)
             {
                 UpdateShow("Bắt đầu Success: " + this.numSuccess);
@@ -76,6 +77,22 @@ namespace RegPlaywright
                 //    lsvData.ItemsSource = listInfo;
                 //}));
                 int index = 0;
+                for(int i = 0; i < this.numThread; i++)
+                {
+                    string ProfileFolderpath = Directory.GetCurrentDirectory() + "\\Profile\\" + i;
+                    try
+                    {
+                        if (Directory.Exists(ProfileFolderpath))
+                        {
+                            Directory.Delete(ProfileFolderpath,true);
+                        }
+                        else
+                        {
+                            Directory.CreateDirectory(ProfileFolderpath);
+                        }
+                    }
+                    catch(Exception e) { Debug.Print("Loi IO "+e.ToString()); }
+                }
 
                 using var ctsAll = new CancellationTokenSource();
                 ctsAll.CancelAfter(TimeSpan.FromMinutes(5));
@@ -256,7 +273,7 @@ namespace RegPlaywright
                         {
                             try
                             {
-                                await Task.Delay(1000).ConfigureAwait(false);
+                                //await Task.Delay(1000).ConfigureAwait(false);
                                 if (check_v2)
                                 {
                                     check_v2 = false;
@@ -272,7 +289,9 @@ namespace RegPlaywright
 
                         try
                         {
-                            await Page.ClickAsync("//*/button[@value='Đăng ký']",timeout:2000).ConfigureAwait(false);
+                            await Page.ClickAsync("//*/button[@value='Đăng ký']", timeout: 2000).ConfigureAwait(false);
+                            
+                            
                             await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
                         }
                         catch
@@ -422,23 +441,14 @@ namespace RegPlaywright
 
             chromeItem.Browser = null;
             chromeItem.Playwright = await Playwright.CreateAsync();
-            string ProfileFolderpath = "Profile" + "\\" + indexvalue;
-            DirectoryInfo directoryInfo = new DirectoryInfo(ProfileFolderpath);
-            if (directoryInfo.Exists)
-            {
-                directoryInfo.Delete();
-            }
-            else
-            {
-                directoryInfo.Create();
-            }
+            
 
             int count = 5;
             do
             {
                 try
                 {
-                    chromeItem.Browser = await chromeItem.Playwright.Chromium.LaunchPersistentContextAsync(directoryInfo.FullName, options);
+                    chromeItem.Browser = await chromeItem.Playwright.Chromium.LaunchPersistentContextAsync(Directory.GetCurrentDirectory() +"\\Profile\\"+ indexvalue, options);
                 }
                 catch
                 {
