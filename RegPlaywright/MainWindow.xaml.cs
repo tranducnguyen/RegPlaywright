@@ -188,8 +188,8 @@ namespace RegPlaywright
                 catch
                 {
                     chrome.Info.Status = "Error set cc";
-                    await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                    await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                    //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                    //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                     chrome.Dispose();
                     return chrome;
                 }
@@ -217,8 +217,8 @@ namespace RegPlaywright
                     catch
                     {
                         chrome.Info.Status = "Error net";
-                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
                     }
@@ -275,13 +275,24 @@ namespace RegPlaywright
                             if (count_limit == 0)
                                 checkChrome = 0;
                         }
-                        await Page.ClickAsync("//*/button[@value='Đăng ký']").ConfigureAwait(false);
+
+                        try
+                        {
+                            await Page.DblClickAsync("//button[@type='submit' and( @data-sigil='touchable multi_step_submit' or @value='Sign Up')]", timeout: 2000).ConfigureAwait(false);
+                            await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            await Page.ClickAsync("//*[@id='signup_button']", timeout: 1000);
+                            await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
+                        }
+                        //await Page.ClickAsync("//*/button[@value='Đăng ký']").ConfigureAwait(false);
                     }
                     catch
                     {
                         chrome.Info.Status = "Error input";
-                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
                     }
@@ -292,18 +303,20 @@ namespace RegPlaywright
 
                     while (count > 0 & !error & !checkpoint & !done)
                     {
+                        string fullContent = await Page.GetContentAsync().ConfigureAwait(false);
+
                         error = Page.Url.Contains("error");
                         checkpoint = Page.Url.Contains("checkpoint");
                         done = Page.Url.Contains("save-device");
                         count--;
-                        await Task.Delay(1000);
+                        await Task.Delay(1000).ConfigureAwait(false);
                     }
 
                     if (count <= 0)
                     {
                         chrome.Info.Status = "Out Time";
-                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
 
@@ -312,8 +325,8 @@ namespace RegPlaywright
                     if (error)
                     {
                         chrome.Info.Status = "Error";
-                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
                     }
@@ -323,8 +336,8 @@ namespace RegPlaywright
 
                         chrome.Info.Status = "CheckPoint";
 
-                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
 
@@ -348,17 +361,16 @@ namespace RegPlaywright
                         chrome.Info.Cookie = result;
                         chrome.Info.Datecreate = DateTime.UtcNow;
 
-                        await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         numSuccess++;
                         return chrome;
                     }
                 }
                 chrome.Info.Status = "Error reg";
-
-                await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                await chrome.Browser.DisposeAsync().ConfigureAwait(false);
+                //await chrome.Browser.CloseAsync().ConfigureAwait(false);
+                //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                 chrome.Dispose();
                 return chrome;
             }
@@ -370,6 +382,8 @@ namespace RegPlaywright
             Debug.Print("Thoát hàm RegBrowseAsync " + chrome.Info.Ho.ToString());
             return chrome;
         }
+
+        
         bool changeIP()
         {
             List<string> deviceList;
