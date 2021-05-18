@@ -276,17 +276,18 @@ namespace RegPlaywright
                                 checkChrome = 0;
                         }
 
-                        try
-                        {
-                            await Page.DblClickAsync("//button[@type='submit' and( @data-sigil='touchable multi_step_submit' or @value='Sign Up')]", timeout: 2000).ConfigureAwait(false);
-                            await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
-                        }
-                        catch
-                        {
-                            await Page.ClickAsync("//*[@id='signup_button']", timeout: 1000);
-                            await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
-                        }
-                        //await Page.ClickAsync("//*/button[@value='Đăng ký']").ConfigureAwait(false);
+                        //try
+                        //{
+                        //    await Page.ClickAsync("//*[@id='signup_button']", timeout: 1000);
+                        //    await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
+                           
+                        //}
+                        //catch
+                        //{
+                        //    await Page.DblClickAsync("//button[@type='submit' and( @data-sigil='touchable multi_step_submit' or @value='Sign Up')]", timeout: 2000).ConfigureAwait(false);
+                        //    await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
+                        //}
+                        await Page.ClickAsync("//*/button[@value='Đăng ký']").ConfigureAwait(false);
                     }
                     catch
                     {
@@ -305,9 +306,11 @@ namespace RegPlaywright
                     {
                         string fullContent = await Page.GetContentAsync().ConfigureAwait(false);
 
-                        error = Page.Url.Contains("error");
-                        checkpoint = Page.Url.Contains("checkpoint");
-                        done = Page.Url.Contains("save-device");
+                        string urlPage = Page.Url;
+
+                        error = urlPage.Contains("error")||fullContent.Contains("Chúng tôi cần thêm thông tin");
+                        checkpoint = urlPage.Contains("checkpoint");
+                        done = urlPage.Contains("save-device")||fullContent.Contains("Đăng nhập bằng");
                         count--;
                         await Task.Delay(1000).ConfigureAwait(false);
                     }
@@ -359,7 +362,6 @@ namespace RegPlaywright
                         string id = Regex.Match(result, pattern).Groups[1].Value.ToString();
                         chrome.Info.Uid = id;
                         chrome.Info.Cookie = result;
-                        chrome.Info.Datecreate = DateTime.UtcNow;
 
                         //await chrome.Browser.CloseAsync().ConfigureAwait(false);
                         //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
