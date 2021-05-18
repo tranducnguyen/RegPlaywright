@@ -188,23 +188,21 @@ namespace RegPlaywright
                 catch
                 {
                     chrome.Info.Status = "Error set cc";
-                    //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                    //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                     chrome.Dispose();
                     return chrome;
                 }
 
                 int count = 5;
                 bool creation = false;
-                while (count > 0 && !creation)
-                {
-                    try
-                    {
-                        creation = await Page.IsVisibleAsync("#signup-button", 1000).ConfigureAwait(false);
-                    }
-                    catch { }
-                    count--;
-                }
+                //while (count > 0 && !creation)
+                //{
+                //    try
+                //    {
+                //        creation = await Page.IsVisibleAsync("#signup-button", 1000).ConfigureAwait(false);
+                //    }
+                //    catch { }
+                //    count--;
+                //}
 
 
                 if (count > 0)
@@ -217,8 +215,6 @@ namespace RegPlaywright
                     catch
                     {
                         chrome.Info.Status = "Error net";
-                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
                     }
@@ -253,17 +249,14 @@ namespace RegPlaywright
 
                         await Page.TypeAsync("#password_step_input", chrome.Info.Pass, 150).ConfigureAwait(false);
 
-                        await Task.Delay(7000);
+                        await Task.Delay(6000).ConfigureAwait(false);
                         int count_limit = 300;
                         bool check_v2 = true;
-                        bool signup1 = false;
                         while (checkChrome > 0 && count_limit > 0)
                         {
                             try
                             {
                                 await Task.Delay(1000).ConfigureAwait(false);
-                                //signup1 = await Page.IsVisibleAsync("//*/button[@value='Đăng ký']", 100).ConfigureAwait(false);
-
                                 if (check_v2)
                                 {
                                     check_v2 = false;
@@ -277,24 +270,21 @@ namespace RegPlaywright
                                 checkChrome = 0;
                         }
 
-                        //try
-                        //{
-                        //    await Page.ClickAsync("//*[@id='signup_button']", timeout: 1000);
-                        //    await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
-                           
-                        //}
-                        //catch
-                        //{
-                        //    await Page.DblClickAsync("//button[@type='submit' and( @data-sigil='touchable multi_step_submit' or @value='Sign Up')]", timeout: 2000).ConfigureAwait(false);
-                        //    await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
-                        //}
-                        await Page.ClickAsync("//*/button[@value='Đăng ký']").ConfigureAwait(false);
+                        try
+                        {
+                            await Page.ClickAsync("//*/button[@value='Đăng ký']",timeout:2000).ConfigureAwait(false);
+                            await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
+                        }
+                        catch
+                        {
+                            await Page.DblClickAsync("//button[@type='submit' and (@data-sigil='touchable multi_step_submit' or @value='Đăng ký')]", timeout: 2000).ConfigureAwait(false);
+                            await Page.WaitForLoadStateAsync(state: LifecycleEvent.Networkidle, 60000).ConfigureAwait(false);
+                        }
+                        //
                     }
                     catch
                     {
                         chrome.Info.Status = "Error input";
-                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
                     }
@@ -317,8 +307,6 @@ namespace RegPlaywright
                     if (count <= 0)
                     {
                         chrome.Info.Status = "Out Time";
-                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
 
@@ -327,8 +315,6 @@ namespace RegPlaywright
                     if (error)
                     {
                         chrome.Info.Status = "Error";
-                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
                     }
@@ -337,9 +323,6 @@ namespace RegPlaywright
                     {
 
                         chrome.Info.Status = "CheckPoint";
-
-                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         return chrome;
 
@@ -361,17 +344,12 @@ namespace RegPlaywright
                         string id = Regex.Match(result, pattern).Groups[1].Value.ToString();
                         chrome.Info.Uid = id;
                         chrome.Info.Cookie = result;
-
-                        //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                        //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                         chrome.Dispose();
                         numSuccess++;
                         return chrome;
                     }
                 }
                 chrome.Info.Status = "Error reg";
-                //await chrome.Browser.CloseAsync().ConfigureAwait(false);
-                //await chrome.Browser.DisposeAsync().ConfigureAwait(false);
                 chrome.Dispose();
                 return chrome;
             }
@@ -444,13 +422,23 @@ namespace RegPlaywright
 
             chromeItem.Browser = null;
             chromeItem.Playwright = await Playwright.CreateAsync();
+            string ProfileFolderpath = "Profile" + "\\" + indexvalue;
+            DirectoryInfo directoryInfo = new DirectoryInfo(ProfileFolderpath);
+            if (directoryInfo.Exists)
+            {
+                directoryInfo.Delete();
+            }
+            else
+            {
+                directoryInfo.Create();
+            }
 
             int count = 5;
             do
             {
                 try
                 {
-                    chromeItem.Browser = await chromeItem.Playwright.Chromium.LaunchPersistentContextAsync("", options);
+                    chromeItem.Browser = await chromeItem.Playwright.Chromium.LaunchPersistentContextAsync(directoryInfo.FullName, options);
                 }
                 catch
                 {
@@ -465,6 +453,7 @@ namespace RegPlaywright
                 await Task.Delay(100);
                 count--;
             } while (chromeItem.Browser == null && count > 0);
+            
             return chromeItem;
         }
         void UpdateShow(string status)
